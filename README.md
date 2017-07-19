@@ -1,5 +1,5 @@
 # Truecoin
-- Ensure you have `testrpc` running and the latest version of `truffle
+- Ensure you have `testrpc` running and the latest version of `truffle`
 ```bash
 yarn global  add truffle ethereumjs-testrpc
 ```
