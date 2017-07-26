@@ -12,163 +12,158 @@
 pragma solidity ^0.4.10;
 
 library DSMath {
-    
-    /*
-    standard uint256 functions
-     */
+	
+	function add(uint256 x, uint256 y) constant returns (uint256 z) {
+		assert((z = x + y) >= x);
+	}
 
-    function add(uint256 x, uint256 y) constant public returns (uint256 z) {
-        assert((z = x + y) >= x);
-    }
+	function sub(uint256 x, uint256 y) constant returns (uint256 z) {
+		assert((z = x - y) <= x);
+	}
 
-    function sub(uint256 x, uint256 y) constant public returns (uint256 z) {
-        assert((z = x - y) <= x);
-    }
+	function mul(uint256 x, uint256 y) constant returns (uint256 z) {
+		z = x * y;
+		assert(x == 0 || z / x == y);
+	}
 
-    function mul(uint256 x, uint256 y) constant public returns (uint256 z) {
-        z = x * y;
-        assert(x == 0 || z / x == y);
-    }
+	function div(uint256 x, uint256 y) constant returns (uint256 z) {
+		z = x / y;
+	}
 
-    function div(uint256 x, uint256 y) constant public returns (uint256 z) {
-        z = x / y;
-    }
+	function min(uint256 x, uint256 y) constant returns (uint256 z) {
+		return x <= y ? x : y;
+	}
+	function max(uint256 x, uint256 y) constant returns (uint256 z) {
+		return x >= y ? x : y;
+	}
 
-    function min(uint256 x, uint256 y) constant public returns (uint256 z) {
-        return x <= y ? x : y;
-    }
-    function max(uint256 x, uint256 y) constant public returns (uint256 z) {
-        return x >= y ? x : y;
-    }
-
-    /*
-    uint128 functions (h is for half)
-     */
+	/*
+	uint128 functions (h is for half)
+	 */
 
 
-    function hadd(uint128 x, uint128 y) constant public returns (uint128 z) {
-        assert((z = x + y) >= x);
-    }
+	function hadd(uint128 x, uint128 y) constant returns (uint128 z) {
+		assert((z = x + y) >= x);
+	}
 
-    function hsub(uint128 x, uint128 y) constant public returns (uint128 z) {
-        assert((z = x - y) <= x);
-    }
+	function hsub(uint128 x, uint128 y) constant returns (uint128 z) {
+		assert((z = x - y) <= x);
+	}
 
-    function hmul(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = x * y;
-        assert(x == 0 || z / x == y);
-    }
+	function hmul(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = x * y;
+		assert(x == 0 || z / x == y);
+	}
 
-    function hdiv(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = x / y;
-    }
+	function hdiv(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = x / y;
+	}
 
-    function hmin(uint128 x, uint128 y) constant public returns (uint128 z) {
-        return x <= y ? x : y;
-    }
-    function hmax(uint128 x, uint128 y) constant public returns (uint128 z) {
-        return x >= y ? x : y;
-    }
+	function hmin(uint128 x, uint128 y) constant returns (uint128 z) {
+		return x <= y ? x : y;
+	}
+	function hmax(uint128 x, uint128 y) constant returns (uint128 z) {
+		return x >= y ? x : y;
+	}
 
 
-    /*
-    int256 functions
-     */
+	/*
+	int256 functions
+	 */
 
-    function imin(int256 x, int256 y) constant public returns (int256 z) {
-        return x <= y ? x : y;
-    }
-    function imax(int256 x, int256 y) constant public returns (int256 z) {
-        return x >= y ? x : y;
-    }
+	function imin(int256 x, int256 y) constant returns (int256 z) {
+		return x <= y ? x : y;
+	}
+	function imax(int256 x, int256 y) constant returns (int256 z) {
+		return x >= y ? x : y;
+	}
 
-    /*
-    WAD math
-     */
+	/*
+	WAD math
+	 */
 
-    uint128 constant WAD = 10 ** 18;
+	uint128 constant WAD = 10 ** 18;
 
-    function wadd(uint128 x, uint128 y) constant public returns (uint128) {
-        return hadd(x, y);
-    }
+	function wadd(uint128 x, uint128 y) constant returns (uint128) {
+		return hadd(x, y);
+	}
 
-    function wsub(uint128 x, uint128 y) constant public returns (uint128) {
-        return hsub(x, y);
-    }
+	function wsub(uint128 x, uint128 y) constant returns (uint128) {
+		return hsub(x, y);
+	}
 
-    function wmul(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = cast((uint256(x) * y + WAD / 2) / WAD);
-    }
+	function wmul(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = cast((uint256(x) * y + WAD / 2) / WAD);
+	}
 
-    function wdiv(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = cast((uint256(x) * WAD + y / 2) / y);
-    }
+	function wdiv(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = cast((uint256(x) * WAD + y / 2) / y);
+	}
 
-    function wmin(uint128 x, uint128 y) constant public returns (uint128) {
-        return hmin(x, y);
-    }
-    function wmax(uint128 x, uint128 y) constant public returns (uint128) {
-        return hmax(x, y);
-    }
+	function wmin(uint128 x, uint128 y) constant returns (uint128) {
+		return hmin(x, y);
+	}
+	function wmax(uint128 x, uint128 y) constant returns (uint128) {
+		return hmax(x, y);
+	}
 
-    /*
-    RAY math
-     */
+	/*
+	RAY math
+	 */
 
-    uint128 constant RAY = 10 ** 27;
+	uint128 constant RAY = 10 ** 27;
 
-    function radd(uint128 x, uint128 y) constant public returns (uint128) {
-        return hadd(x, y);
-    }
+	function radd(uint128 x, uint128 y) constant returns (uint128) {
+		return hadd(x, y);
+	}
 
-    function rsub(uint128 x, uint128 y) constant public returns (uint128) {
-        return hsub(x, y);
-    }
+	function rsub(uint128 x, uint128 y) constant returns (uint128) {
+		return hsub(x, y);
+	}
 
-    function rmul(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = cast((uint256(x) * y + RAY / 2) / RAY);
-    }
+	function rmul(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = cast((uint256(x) * y + RAY / 2) / RAY);
+	}
 
-    function rdiv(uint128 x, uint128 y) constant public returns (uint128 z) {
-        z = cast((uint256(x) * RAY + y / 2) / y);
-    }
+	function rdiv(uint128 x, uint128 y) constant returns (uint128 z) {
+		z = cast((uint256(x) * RAY + y / 2) / y);
+	}
 
-    function rpow(uint128 x, uint64 n) constant public returns (uint128 z) {
-        // This famous algorithm is called "exponentiation by squaring"
-        // and calculates x^n with x as fixed-point and n as regular unsigned.
-        //
-        // It's O(log n), instead of O(n) for naive repeated multiplication.
-        //
-        // These facts are why it works:
-        //
-        //  If n is even, then x^n = (x^2)^(n/2).
-        //  If n is odd,  then x^n = x * x^(n-1),
-        //   and applying the equation for even x gives
-        //    x^n = x * (x^2)^((n-1) / 2).
-        //
-        //  Also, EVM division is flooring and
-        //    floor[(n-1) / 2] = floor[n / 2].
+	function rpow(uint128 x, uint64 n) constant returns (uint128 z) {
+		// This famous algorithm is called "exponentiation by squaring"
+		// and calculates x^n with x as fixed-point and n as regular unsigned.
+		//
+		// It's O(log n), instead of O(n) for naive repeated multiplication.
+		//
+		// These facts are why it works:
+		//
+		//  If n is even, then x^n = (x^2)^(n/2).
+		//  If n is odd,  then x^n = x * x^(n-1),
+		//   and applying the equation for even x gives
+		//    x^n = x * (x^2)^((n-1) / 2).
+		//
+		//  Also, EVM division is flooring and
+		//    floor[(n-1) / 2] = floor[n / 2].
 
-        z = n % 2 != 0 ? x : RAY;
+		z = n % 2 != 0 ? x : RAY;
 
-        for (n /= 2; n != 0; n /= 2) {
-            x = rmul(x, x);
+		for (n /= 2; n != 0; n /= 2) {
+			x = rmul(x, x);
 
-            if (n % 2 != 0) {
-                z = rmul(z, x);
-            }
-        }
-    }
+			if (n % 2 != 0) {
+				z = rmul(z, x);
+			}
+		}
+	}
 
-    function rmin(uint128 x, uint128 y) constant public returns (uint128) {
-        return hmin(x, y);
-    }
-    function rmax(uint128 x, uint128 y) constant public returns (uint128) {
-        return hmax(x, y);
-    }
+	function rmin(uint128 x, uint128 y) constant returns (uint128) {
+		return hmin(x, y);
+	}
+	function rmax(uint128 x, uint128 y) constant returns (uint128) {
+		return hmax(x, y);
+	}
 
-    function cast(uint256 x) constant public returns (uint128 z) {
-        assert((z = uint128(x)) == x);
-    }
-
+	function cast(uint256 x) constant returns (uint128 z) {
+		assert((z = uint128(x)) == x);
+	}
 }

@@ -18,66 +18,46 @@ contract TestDSMathFail {
     // uint256 tests
 
     function testFail_add() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.add(2 ** 256 - 1, 1);
+        DSMath.add(2 ** 256 - 1, 1);
     }
 
     function testFail_sub() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.sub(0, 1);
+        DSMath.sub(0, 1);
     }
 
     function testFail_mul() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.mul(2 ** 254, 6);
+        DSMath.mul(2 ** 254, 6);
     }
 
     function testFail_div() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.div(0, 0);
+        DSMath.div(0, 0);
     }
 
     // uint128 tests
 
     function testFail_hadd() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.hadd(2 ** 128 - 1, 1);
+        DSMath.hadd(2 ** 128 - 1, 1);
     }
 
     function testFail_hsub() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.hsub(0, 1);
+        DSMath.hsub(0, 1);
     }
 
     function testFail_hmul() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.hmul(2 ** 128 -1, 2);
+        DSMath.hmul(2 ** 128 -1, 2);
     }
 
 
     function testFail_hdiv() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.hdiv(0, 0);
+        DSMath.hdiv(0, 0);
     }
 
     function testFail_wmul_overflow() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.wmul(2 ** 128 - 1, 1.0 ether + 1 wei);
+        DSMath.wmul(2 ** 128 - 1, 1.0 ether + 1 wei);
     }
 
 
     function testFail_wdiv_zero() {
-        DSMath ds = DSMath(DeployedAddresses.DSMath());
-
-        ds.wdiv(1.0 ether, 0.0 ether);
+        DSMath.wdiv(1.0 ether, 0.0 ether);
     }
 }

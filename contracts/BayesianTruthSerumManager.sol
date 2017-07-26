@@ -1,24 +1,44 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.10;
 
-import './Mechanism.sol';
+import './BayesianTruthMechanism.sol';
 
 contract BayesianTruthSerumManager {
-    using Mechanism for Mechanism.M;
-    Mechanism.M mechanism;
-    
-    address public owner;
-    event VoteSubmission(address sender, uint128 binary, uint128 meta);
+	using BayesianTruthMechanism for BayesianTruthMechanism.Manager;
+	BayesianTruthMechanism.Manager manager;
+	
+	address public owner;
+	event VoteSubmission(address sender, uint128 binary, uint128 meta);
 
-    function BTS() {
-        owner = msg.sender;
-    }
+	function BayesianTruthSerumManager() {
+		owner = msg.sender;
+	}
 
-    function startMechanism() {
-        mechanism.init(60);
-    }
-    
-    function submitVote(uint128 i, uint128 p) {
-        mechanism.submit(msg.sender, i, p);
-        VoteSubmission(msg.sender, i, p);
-    }
+	function startMechanism() {
+		require(manager.mechanism.initiationTime == 0);
+		
+		manager.init(60, 3);
+	}
+	
+	function getMechanismInfo()
+		constant
+		returns (address[], uint128[], uint128[], uint8[])
+	{
+		uint participantLength = manager.mechanism.participants.length - 1;
+		address[] memory participants = new address[](participantLength);
+		for (uint i = 0; i < participants.length; i++) {
+			participants[i] = manager.mechanism.participants[i + 1];
+		}
+
+		return (
+			participants,
+			manager.mechanism.binaryPreds,
+			manager.mechanism.metaPreds,
+			manager.mechanism.events
+		);
+	}
+	
+	function submitVote(uint128 i, uint128 p) {
+		manager.submit(msg.sender, i, p);
+		VoteSubmission(msg.sender, i, p);
+	}
 }

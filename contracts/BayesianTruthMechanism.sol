@@ -1,4 +1,4 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.10;
 
 import './Mechanism.sol';
 import "./DSMath.sol";
@@ -12,36 +12,32 @@ library BayesianTruthMechanism {
 		uint128 playerlimit;
 	}
 
-	function init(Manager storage self, uint128 numseconds, uint128 playerlimit) {
-		if (self.mechanism.parentContract != address(0x0)) {
-			throw;
-		}
+	function init(Manager storage self, uint128 numseconds, uint128 playerlimit)
+		internal
+	{
+		require(self.mechanism.initiationTime == 0);
 
 		self.mechanism.init(numseconds);
-		self.playerlimit = playerlimit;
+		self.playerlimit = playerlimit + 1;
 	}
 
-	function submit(Manager storage self, address voter, uint128 i, uint128 p) {
-		if (self.mechanism.participants.length >= self.playerlimit) {
-			throw;
-		}
-
+	function submit(Manager storage self, address voter, uint128 i, uint128 p)
+		internal
+	{
+		require(self.mechanism.participants.length < self.playerlimit);
 		self.mechanism.submit(voter, i, p);
 	}
 
-	function score(Manager storage self) constant returns(uint128[], uint128) {
-		if (self.mechanism.expirationTime <= now) {
-			throw;
-		}
-
-		uint128[] scores = self.scores;
-
-		for (uint i = 0; i < scores.length; i++) {
+	function score(Manager storage self)
+		internal
+	{
+		uint pLength = self.mechanism.participants.length;
+		for (uint i = 0; i < pLength; i++) {
 			uint128 informationScore;
 			uint128 predictionScore;
 
-			uint128 referenceAgent = uint128((i+1) % scores.length);
-			uint128 peerAgent = uint128((i+2) % scores.length);
+			uint128 referenceAgent = uint128((i+1) % pLength);
+			uint128 peerAgent = uint128((i+2) % pLength);
 
 			uint128 meta = self.mechanism.metaPreds[referenceAgent];
 			uint128 delta = DSMath.wmin(meta, DSMath.wmin(1 ether, meta));
@@ -63,17 +59,18 @@ library BayesianTruthMechanism {
 				self.mechanism.metaPreds[i]
 			);
 
-			scores.push(DSMath.wadd(informationScore, predictionScore));
+			self.scores.push(DSMath.wadd(informationScore, predictionScore));
 		}
-
-		return (scores, 1 ether);
 	}
 
-	function RBTSQuadraticScoring(uint128 i, uint128 p) constant returns(uint128) {
+	function RBTSQuadraticScoring(uint128 i, uint128 p)
+		internal
+		returns(uint128)
+	{
 		if (i == 0) {
 			return uint128(DSMath.wsub(DSMath.wmul(2 * 1 ether, p), DSMath.wmul(p, p)));
 		} else {
 			return uint128(DSMath.wsub(1 ether,DSMath.wmul(p, p)));
 		}
-	}
+	}	
 }
