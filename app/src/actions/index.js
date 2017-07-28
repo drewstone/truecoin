@@ -1,8 +1,8 @@
-import { screenConstants } from '../constants';
+import * as constants from '../constants';
 
 export const screenActions = {
   switchTo: screen => ({
-    type: screenConstants.switchTo,
+    type: constants.screenActions.SWITCH_TO,
     payload: screen,
   }),
 };

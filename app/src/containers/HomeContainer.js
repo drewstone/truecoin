@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { screenActions } from '../actions';
-import Home from '../components/Home';
+import Home from '../components/home';
 
 class HomeContainer extends Component {
   render() {

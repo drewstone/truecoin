@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { screenActions } from '../actions';
-import { screenConstants } from '../constants';
+import { screens } from '../constants';
 import HomeContainer from './HomeContainer';
 
 const screenContainerComponent = {
-  [screenConstants.HOME]: HomeContainer,
+  [screens.HOME]: HomeContainer,
 };
 
 class App extends Component {

@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
-import { screenConstants, screenActions } from '../constants';
+import { screens, screenActions } from '../constants';
 
-const screenReducer = (state = screenConstants.HOME, action) => {
+const screenReducer = (state = screens.HOME, action) => {
   const { type, payload } = action;
 
   switch (type) {
@@ -9,7 +9,6 @@ const screenReducer = (state = screenConstants.HOME, action) => {
       return payload;
     default:
       return state;
-
   }
 };
 

@@ -1,7 +1,7 @@
-import { screenConstants } from '../constants';
+import { screens } from '../constants';
 
 export default function (config) {
   return {
-    currentScreen: screenConstants.HOME,
+    currentScreen: screens.HOME,
   };
 }
