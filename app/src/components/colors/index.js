@@ -149,6 +149,10 @@ export const colors = {
   yellowgreen: "#9acd32",
 }
 
-export const gradients = {
-  deepblue: ['#1488CC', '#2B32B2'],
+const cx = key => colors[key] || key
+export const gradient = (n, from, to) => `linear-gradient(${n}deg, ${cx(from)}, ${cx(to)})`
+
+export default {
+  colors,
+  gradient
 }

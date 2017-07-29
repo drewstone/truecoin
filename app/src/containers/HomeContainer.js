@@ -9,6 +9,7 @@ class HomeContainer extends Component {
   render() {
     return (
       <Home
+        data={this.props.questions}
         switchTo={this.props.screenActions.switchTo}
       />
     );
@@ -16,6 +17,7 @@ class HomeContainer extends Component {
 }
 
 const mapStateToProps = state => ({
+  questions: state.questions,
 });
 
 const mapDispatchToProps = dispatch => ({
