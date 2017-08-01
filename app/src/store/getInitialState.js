@@ -1,31 +1,36 @@
 import { screens } from '../constants';
 
 const developmentFixtures = {
-  questions: [{
+  predictions: [{
     id: 1,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    leaning: 30,
+    left: 1,
+    right: 10,
   },{
-    id: 1,
+    id: 2,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    leaning: 30,
+    left: 2,
+    right: 10,
   },{
-    id: 1,
+    id: 3,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    leaning: 30,
+    left: 3,
+    right: 10,
   },{
-    id: 1,
+    id: 4,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    leaning: 30,
+    left: 4,
+    right: 10,
   },{
-    id: 1,
+    id: 5,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    leaning: 30,
+    left: 5,
+    right: 10,
   }]
 }
 

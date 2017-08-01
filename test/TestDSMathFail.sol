@@ -15,49 +15,49 @@ import "../contracts/DSMath.sol";
 
 contract TestDSMathFail {
 
-    // uint256 tests
+	// uint256 tests
 
-    function testFail_add() {
-        DSMath.add(2 ** 256 - 1, 1);
-    }
+	function testFail_add() {
+		DSMath.add(2 ** 256 - 1, 1);
+	}
 
-    function testFail_sub() {
-        DSMath.sub(0, 1);
-    }
+	function testFail_sub() {
+		DSMath.sub(0, 1);
+	}
 
-    function testFail_mul() {
-        DSMath.mul(2 ** 254, 6);
-    }
+	function testFail_mul() {
+		DSMath.mul(2 ** 254, 6);
+	}
 
-    function testFail_div() {
-        DSMath.div(0, 0);
-    }
+	function testFail_div() {
+		DSMath.div(0, 0);
+	}
 
-    // uint128 tests
+	// uint128 tests
 
-    function testFail_hadd() {
-        DSMath.hadd(2 ** 128 - 1, 1);
-    }
+	function testFail_hadd() {
+		DSMath.hadd(2 ** 128 - 1, 1);
+	}
 
-    function testFail_hsub() {
-        DSMath.hsub(0, 1);
-    }
+	function testFail_hsub() {
+		DSMath.hsub(0, 1);
+	}
 
-    function testFail_hmul() {
-        DSMath.hmul(2 ** 128 -1, 2);
-    }
-
-
-    function testFail_hdiv() {
-        DSMath.hdiv(0, 0);
-    }
-
-    function testFail_wmul_overflow() {
-        DSMath.wmul(2 ** 128 - 1, 1.0 ether + 1 wei);
-    }
+	function testFail_hmul() {
+		DSMath.hmul(2 ** 128 -1, 2);
+	}
 
 
-    function testFail_wdiv_zero() {
-        DSMath.wdiv(1.0 ether, 0.0 ether);
-    }
+	function testFail_hdiv() {
+		DSMath.hdiv(0, 0);
+	}
+
+	function testFail_wmul_overflow() {
+		DSMath.wmul(2 ** 128 - 1, 1.0 ether + 1 wei);
+	}
+
+
+	function testFail_wdiv_zero() {
+		DSMath.wdiv(1.0 ether, 0.0 ether);
+	}
 }

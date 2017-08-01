@@ -49,11 +49,4 @@ library Mechanism {
 	{
 		return (self.participants, self.metaPreds);
 	}
-
-	function getParent(M storage self)
-		constant
-		returns (address)
-	{
-		return self.parentContract;
-	}
 }

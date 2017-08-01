@@ -150,9 +150,11 @@ export const colors = {
 }
 
 const cx = key => colors[key] || key
-export const gradient = (n, from, to) => `linear-gradient(${n}deg, ${cx(from)}, ${cx(to)})`
+export const gradient = (n, from, to, amt=5) => `linear-gradient(${n}deg, ${cx(from)}, ${cx(from)} ${amt}%, ${cx(to)})`
+export const twocolor = (left, right, lint) => `linear-gradient(90deg, ${left} ${lint}%, ${right} ${lint}%)`
 
 export default {
   colors,
-  gradient
+  gradient,
+  twocolor,
 }
