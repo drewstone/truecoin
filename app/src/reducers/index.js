@@ -24,9 +24,9 @@ const predictionReducer = (state = [], action) => {
       return state.map(elt => {
         if (elt.id === payload.data.id) {
           if (payload.value) {
-            payload.data.right += 1;
+            payload.data.true += 1;
           } else {
-            payload.data.left += 1;
+            payload.data.false += 1;
           }
 
           return Object.assign({}, payload.data, {

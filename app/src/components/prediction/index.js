@@ -1,53 +1,36 @@
 import React from 'react';
 import Bar from '../bar';
 import styled from 'styled-components';
-import { colors, gradient, twocolor } from '../colors';
 
-const Button = styled.a`
+const Button = styled.button`
   margin-left: 5px;
   margin-bottom: 5px;
-  &:hover {
-    background: grey;
-  }
-  background: ${props => {
-    if (props.twocolor && props.colors) {
-      return twocolor(props.colors[0], props.colors[1], props.leaning);
-    } else if (props.colors) {
-      return gradient(90, colors[props.colors[0]], colors[props.colors[1]]);
-    }
-
-    return gradient(90, colors.lightgrey, colors.lightgrey);
-  }};
-`;
-
-const Div = styled.div`
-  float: center;
 `;
 
 const Prediction = ({ onClick, completed, text, leaning }) => (
-  <div>
-    <li style={{textDecoration: completed ? 'line-through' : 'none'}}>
-      {text}
-      <Div>
+  <div className="box">
+    <div className="columns">
+      <div className="column is-10">
+        <li style={{textDecoration: completed ? 'line-through' : 'none'}}>
+          {text}
+        </li>      
+      </div>
+      <div className="column">
         <span style={{display: !completed ? 'column' : 'none'}}>
-          <Button
-            colors={['red', 'red']}
-            className="pure-button"
-            onClick={() => onClick(0)}
-          />
+          <Button className="button is-info" onClick={() => onClick(1)}>
+            True
+          </Button>
         </span>      
         <span style={{display: !completed ? 'column' : 'none'}}>
-          <Button
-            colors={['blue', 'blue']}        
-            className="pure-button"
-            onClick={() => onClick(1)}
-          />
+          <Button className="button is-danger" onClick={() => onClick(0)}>
+            False
+          </Button>
         </span>
-      </Div>
-    </li>
+      </div>
+    </div>
     <Bar
       twocolor={true}
-      colors={['red', 'blue']}
+      colors={['blue', 'red']}
       leaning={leaning}
     />
   </div>

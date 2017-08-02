@@ -5,32 +5,32 @@ const developmentFixtures = {
     id: 1,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    left: 1,
-    right: 10,
+    true: 1,
+    false: 10,
   },{
     id: 2,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    left: 2,
-    right: 10,
+    true: 2,
+    false: 10,
   },{
     id: 3,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    left: 3,
-    right: 10,
+    true: 3,
+    false: 10,
   },{
     id: 4,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    left: 4,
-    right: 10,
+    true: 4,
+    false: 10,
   },{
     id: 5,
     type: 'PREDICTION',
     q: 'Is this a quality article?',
-    left: 5,
-    right: 10,
+    true: 5,
+    false: 10,
   }]
 }
 
