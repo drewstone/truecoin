@@ -19,7 +19,7 @@ const PredictionList = ({ data, vote }) => (
 );
 
 const Demo = ({ vote, data = [], switchTo, screens }) => {
-  const style = {height: `${window.innerHeight}px`, overflow: 'auto', padding: '40px'};
+  const style = {maxHeight: `${window.innerHeight}px`};
   return (
     <section className="hero is-fullheight is-light">
       <div className="columns">
@@ -51,14 +51,18 @@ const Demo = ({ vote, data = [], switchTo, screens }) => {
           </div>
         </aside>
         <div className="column is-10 admin-panel">
-          <section className="hero is-light" style={style}>
-            <div className="columns"> TEST </div>
+          <section className="hero is-light is-clipped" style={Object.assign({padding: '40px'}, style)}>
+            <div className="columns">
+              <div className="column">
+                <p style={{fontSize: '30px', marginBottom: '30px'}}>Predictions</p>
+              </div>
+            </div>
             <div className="columns">
               <div className="column" style={{overflow: 'auto'}}>
                 <table className="table is-fullwidth">
                   <thead>
                     <tr>
-                      <th>One</th>
+                      <th style={{height: '50px'}}>One</th>
                       <th>Two</th>
                     </tr>
                   </thead>
@@ -158,6 +162,14 @@ const Demo = ({ vote, data = [], switchTo, screens }) => {
                     <tr>
                       <td>Nine</td>
                       <td>Ten</td>
+                    </tr>
+                    <tr>
+                      <td>Eleven</td>
+                      <td>Twelve</td>
+                    </tr>
+                    <tr>
+                      <td>Eleven</td>
+                      <td>Twelve</td>
                     </tr>
                     <tr>
                       <td>Eleven</td>
