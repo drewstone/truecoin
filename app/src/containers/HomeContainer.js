@@ -2,28 +2,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { screenActions, predictionActions } from '../actions';
+import { screens } from '../constants';
+import { screenActions } from '../actions';
 import Home from '../components/home';
 
 class HomeContainer extends Component {
   render() {
     return (
       <Home
-        data={this.props.predictions}
         switchTo={this.props.screenActions.switchTo}
-        vote={this.props.predictionActions.binaryVote}
+        screens={screens}
       />
     );
   }
 }
 
-const mapStateToProps = state => ({
-  predictions: state.predictions,
-});
+const mapStateToProps = state => ({});
 
 const mapDispatchToProps = dispatch => ({
   screenActions: bindActionCreators(screenActions, dispatch),
-  predictionActions: bindActionCreators(predictionActions, dispatch),
 })
 
 export default connect(

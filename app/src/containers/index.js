@@ -5,9 +5,11 @@ import { bindActionCreators } from 'redux';
 import { screenActions } from '../actions';
 import { screens } from '../constants';
 import HomeContainer from './HomeContainer';
+import DemoContainer from './DemoContainer';
 
 const screenContainerComponent = {
   [screens.HOME]: HomeContainer,
+  [screens.DEMO]: DemoContainer,
 };
 
 class App extends Component {

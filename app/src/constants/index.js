@@ -1,6 +1,7 @@
 // SCREEN CONSTANTS
 export const screens = {
   HOME: 'HOME',
+  DEMO: 'DEMO',
 };
 
 export const screenActions = {
