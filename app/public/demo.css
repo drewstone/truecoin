@@ -1,50 +1,13 @@
-.aside {
-  background-color: #354052;
-  margin-right: -10px;
-}
-.aside .main {
-  padding: 40px;
-  color: #6F7B7E;
-}
-.aside .title {
-  color: #6F7B7E;
-  font-size: 18px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-.aside .main .item {
-  display: block;
-  padding: 10px 0;
-  color: #6F7B7E;
+.demo-menu {
+	padding: 40px;
+	height: 40px;
 }
 
-.aside .main .item:hover {
-  color: white;
+.prediction-previews div {
+	margin: 0 0 50px 0;
 }
 
-.aside .main .item.active {
-  color: #F6F7F7;
-}
-.aside .main .icon {
-  font-size: 19px;
-  padding-right: 30px;
-}
-.aside .main .name {
-  font-size: 16px;
-  font-weight: bold;
-}
-.admin-panel {
-  padding-bottom: 0;
-}
-.content {
-  display: block;
-  background-color: #fff;
-  padding: 40px 20px;
-}
-.hero .tabs ul {
-    border-bottom: 1px solid #d3d6db;
-}
-
-.panel-block {
-  overflow: hidden;
+.pred-modal {
+	height: auto;
+	overflow: hidden;
 }

@@ -4,16 +4,22 @@ import Navbar from '../navbar';
 
 export default function Home({ switchTo, screens }) {
   return (
-    <section className="home-background hero is-fullheight is-dark">
-      <Navbar
-        switchTo={switchTo}
-        screens={screens}
-      />
-      <footer className="footer">
+    <div>
+      <section className="home-background hero is-fullheight is-dark">
+        <Navbar
+          switchTo={switchTo}
+          screens={screens}
+          names={['a','b','c']}
+        />
+      </section>
+      <section className="hero is-fullheight is-light">
+
+      </section>
+      <footer className="footer" style={{height: '10px'}}>
         <div className="container">
           <div className="has-text-centered">
             <p>
-              <strong>Copyright 2017</strong> - <a href="http://jgthms.com">Truecoin LLC</a>.
+              <strong>Copyright 2017</strong> - <a href="https://github.com/drewstone">Truecoin LLC</a>.
             </p>
             <p>
               <a className="icon" href="https://github.com/drewstone">
@@ -23,6 +29,6 @@ export default function Home({ switchTo, screens }) {
           </div>
         </div>
       </footer>
-    </section>
+    </div>
   );
 }

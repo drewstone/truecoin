@@ -3,7 +3,7 @@ pragma solidity ^0.4.10;
 library PredictionStore {
 	struct Prediction {
 		address creator;
-		bytes32 ipfsHash
+		bytes32 ipfsHash;
 	}
 
 	struct Store {

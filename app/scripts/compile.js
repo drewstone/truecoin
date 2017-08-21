@@ -1,12 +1,12 @@
-import Promise from 'bluebird';
-import path from 'path';
-import fs from 'fs';
-import solc from 'solc';
-import Artifactor from 'truffle-artifactor';
-import contract from 'truffle-contract';
-import config from '../config/contracts_config';
+const Promise = require('bluebird');
+const path = require('path');
+const fs = require('fs');
+const solc = require('solc');
+const Artifactor = require('truffle-artifactor');
+const contract = require('truffle-contract');
+const config = require('../config/contracts_config');
 
-export default function() {
+module.exports = function() {
   const dirPath = path.join(path.resolve('./'), '/contracts');
   const artifactor = new Artifactor(dirPath);
 
@@ -38,11 +38,11 @@ function initialize(dirPath, artifactor) {
 
 function compile(artifactor) {
   let data = fs.readdirSync(config.CONTRACTS_DIRECTORY);
-  data = data.map(contract => ({
-    contract,
-    data: fs.readFileSync(`${config.CONTRACTS_DIRECTORY}/${contract}`).toString(),
+  data = data.map(c => ({
+    c,
+    data: fs.readFileSync(`${config.CONTRACTS_DIRECTORY}/${c}`).toString(),
   }))
-  .reduce((prev, curr) => (Object.assign({}, prev, {[curr.contract]: curr.data})), {});
+  .reduce((prev, curr) => (Object.assign({}, prev, {[curr.c]: curr.data})), {});
   
   const output = solc.compile({ sources: data }, 1);
 
