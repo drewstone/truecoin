@@ -1,7 +1,7 @@
 pragma solidity ^0.4.10;
 
 import './Mechanism.sol';
-import "./DSMath.sol";
+import "../math/DSMath.sol";
 
 library BayesianTruthMechanism {
 	using Mechanism for Mechanism.M;
@@ -9,22 +9,19 @@ library BayesianTruthMechanism {
 	struct Manager {
 		Mechanism.M mechanism;
 		uint128[] scores;
-		uint128 playerlimit;
 	}
 
-	function init(Manager storage self, uint128 numseconds, uint128 playerlimit)
+	function init(Manager storage self, uint128 numseconds)
 		internal
 	{
 		require(self.mechanism.initiationTime == 0);
 
 		self.mechanism.init(numseconds);
-		self.playerlimit = playerlimit + 1;
 	}
 
 	function submit(Manager storage self, address voter, uint128 i, uint128 p)
 		internal
 	{
-		require(self.mechanism.participants.length < self.playerlimit);
 		self.mechanism.submit(voter, i, p);
 	}
 

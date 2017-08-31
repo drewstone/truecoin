@@ -16,7 +16,7 @@ class App extends Component {
   render() {
     const { currentScreen } = this.props;
     const ScreenComponent = screenContainerComponent[currentScreen];
-
+    
     return (
       <ScreenComponent />
     );

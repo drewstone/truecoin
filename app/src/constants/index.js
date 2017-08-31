@@ -4,6 +4,10 @@ export const screens = {
   DEMO: 'DEMO',
 };
 
+export const options = {
+  ADD_PREDICTION: 'ADD_PREDICTION',
+}
+
 export const screenActions = {
   SWITCH_TO: 'SWITCH_TO',
 };

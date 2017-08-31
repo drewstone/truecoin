@@ -4,12 +4,12 @@ import { bindActionCreators } from 'redux';
 
 import { screens } from '../constants';
 import { screenActions } from '../actions';
-import Home from '../components/home';
+import Prediction from '../components/prediction';
 
-class HomeContainer extends Component {
+class PredictionContainer extends Component {
   render() {
     return (
-      <Home
+      <Prediction
         switchTo={this.props.screenActions.switchTo}
         screens={screens}
       />
@@ -27,4 +27,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(HomeContainer);
+)(CreatePredContainer);

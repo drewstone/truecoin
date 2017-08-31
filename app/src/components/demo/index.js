@@ -16,13 +16,17 @@ const PredictionList = ({ data, vote }) => (
   }</ul>
 );
 
-const Demo = ({ vote, data = [], switchTo, screens }) => {
+const Demo = ({ vote, data = [], switchTo, screens, options }) => {
   const style = {height: `${window.innerHeight}px`, padding: '20px'};
+  const updatedScreens = Object.assign({}, screens);
+  delete updatedScreens.DEMO
+
   return (
-    <div style={{maxHeight: `${window.innerHeight}px`, overflow: 'hidden'}}>
+    <div className="demo" style={{maxHeight: `${window.innerHeight}px`, overflow: 'hidden'}}>
       <Navbar
-        demoBool={false}
-        names={['test', 'testrer']}
+        screens={updatedScreens}
+        switchTo={switchTo}
+        options={options}
       />
       <section className="hero is-fullheight is-light">
         <div className="columns" style={style}>

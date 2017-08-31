@@ -3,13 +3,15 @@ import PredictionPreview from '../prediction-preview';
 import Navbar from '../navbar';
 
 export default function Home({ switchTo, screens }) {
+  const updatedScreens = Object.assign({}, screens);
+  delete updatedScreens.HOME;
+
   return (
-    <div>
-      <section className="home-background hero is-fullheight is-dark">
+    <div className="home-background">
+      <section className="hero is-fullheight">
         <Navbar
           switchTo={switchTo}
-          screens={screens}
-          names={['a','b','c']}
+          screens={updatedScreens}
         />
       </section>
       <section className="hero is-fullheight is-light">

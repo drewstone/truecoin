@@ -35,7 +35,7 @@ const developmentFixtures = {
 }
 
 export default function (config) {
-  const state = { currentScreen: screens.DEMO };
+  const state = { currentScreen: screens.HOME };
 
   if (process.env.NODE_ENV === 'development') {
     return Object.assign({}, state, developmentFixtures);

@@ -6,17 +6,14 @@ contract BayesianTruthSerumManager {
 	using BayesianTruthMechanism for BayesianTruthMechanism.Manager;
 	BayesianTruthMechanism.Manager manager;
 	
-	address public owner;
 	event VoteSubmission(address sender, uint128 binary, uint128 meta);
 
 	function BayesianTruthSerumManager() {
-		owner = msg.sender;
 	}
 
-	function startMechanism() {
+	function startMechanism(uint128 mins) {
 		require(manager.mechanism.initiationTime == 0);
-		
-		manager.init(60, 3);
+		manager.init(1 minutes * mins);
 	}
 	
 	function getMechanismInfo()
