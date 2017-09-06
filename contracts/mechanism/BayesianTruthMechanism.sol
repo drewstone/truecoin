@@ -27,6 +27,7 @@ library BayesianTruthMechanism {
 
 	function score(Manager storage self)
 		internal
+		returns (uint128 scores)
 	{
 		uint pLength = self.mechanism.participants.length;
 		for (uint i = 0; i < pLength; i++) {
@@ -58,6 +59,8 @@ library BayesianTruthMechanism {
 
 			self.scores.push(DSMath.wadd(informationScore, predictionScore));
 		}
+
+		return self.scores;
 	}
 
 	function RBTSQuadraticScoring(uint128 i, uint128 p)

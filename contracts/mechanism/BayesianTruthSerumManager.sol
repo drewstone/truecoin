@@ -8,14 +8,23 @@ contract BayesianTruthSerumManager {
 	
 	event VoteSubmission(address sender, uint128 binary, uint128 meta);
 
-	function BayesianTruthSerumManager() {
-	}
-
-	function startMechanism(uint128 mins) {
+	function startMechanism(uint128 mins)
+		internal
+	{
 		require(manager.mechanism.initiationTime == 0);
 		manager.init(1 minutes * mins);
 	}
 	
+	function getScores()
+		constant
+		returns (address[], uint128[])
+	{
+		var (participants, _, _, _) = this.getMechanismInfo();
+		uint128[] scores = manager.score();
+
+		return (participants, scores);
+	}
+
 	function getMechanismInfo()
 		constant
 		returns (address[], uint128[], uint128[], uint8[])
@@ -34,8 +43,10 @@ contract BayesianTruthSerumManager {
 		);
 	}
 	
-	function submitVote(uint128 i, uint128 p) {
-		manager.submit(msg.sender, i, p);
-		VoteSubmission(msg.sender, i, p);
+	function submitVote(uint128 i, uint128 p, address submitter)
+		internal
+	{
+		manager.submit(submitter, i, p);
+		VoteSubmission(submitter, i, p);
 	}
 }

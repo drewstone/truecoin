@@ -11,7 +11,7 @@ pragma solidity ^0.4.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/DSMath.sol";
+import "../contracts/math/DSMath.sol";
 
 contract TestDSMath {
 	function test_add() {

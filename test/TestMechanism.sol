@@ -2,8 +2,8 @@ pragma solidity ^0.4.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/DSMath.sol";
-import "../contracts/Mechanism.sol";
+import "../contracts/math/DSMath.sol";
+import "../contracts/mechanism/Mechanism.sol";
 
 contract TestMechanism {
 	using Mechanism for Mechanism.M;
