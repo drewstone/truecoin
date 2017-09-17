@@ -1,15 +1,15 @@
 const DSMath = artifacts.require('./DSMath.sol');
 const Mechanism = artifacts.require('./Mechanism.sol');
-const BayesianTruthMechanism = artifacts.require('./BayesianTruthMechanism');
-const BayesianTruthSerumManager = artifacts.require('./BayesianTruthSerumManager');
+const RBTSMechanism = artifacts.require('./RBTSMechanism');
+const TruecoinProtocol = artifacts.require('./TruecoinProtocol');
 
 module.exports = function(deployer) {
   deployer.deploy(DSMath);
-  deployer.link(DSMath, Mechanism);
   deployer.deploy(Mechanism);
-  deployer.link(DSMath, BayesianTruthMechanism);
-  deployer.link(Mechanism, BayesianTruthMechanism);
-  deployer.deploy(BayesianTruthMechanism);
-  deployer.link(BayesianTruthMechanism, BayesianTruthSerumManager);
-  deployer.deploy(BayesianTruthSerumManager);
+  deployer.link(Mechanism, RBTSMechanism);
+  deployer.link(DSMath, RBTSMechanism);
+  deployer.deploy(RBTSMechanism);
+  deployer.link(DSMath, TruecoinProtocol);
+  deployer.link(RBTSMechanism, TruecoinProtocol);
+  deployer.deploy(TruecoinProtocol);
 };

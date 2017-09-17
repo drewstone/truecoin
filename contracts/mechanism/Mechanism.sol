@@ -2,6 +2,7 @@ pragma solidity ^0.4.10;
 
 library Mechanism {
 	struct M {
+		bytes32 question;
 		address parentContract;
 		uint8[] events;
 		mapping (address => uint) pOrdering;
@@ -9,29 +10,25 @@ library Mechanism {
 		uint128[] binaryPreds;
 		uint128[] metaPreds;
 		uint256 initiationTime;
-		uint256 expirationTime;
 		bytes32 predictedOutcome;
 	}
 
-	function init(M storage self, uint128 numseconds)
+	function init(M storage self, bytes32 question)
 		internal
 	{
 		require(self.initiationTime == 0);
-
+		self.question = question;
 		self.parentContract = this;
 		self.events = [0,1];
 		self.initiationTime = now;
-		self.expirationTime = now +  numseconds * 1 seconds;
 		self.participants.length++;
 	}
 
-	function submit(M storage self, address voter, uint128 i, uint128 p)
+	function submit(M storage self, uint128 i, uint128 p, address submitter)
 		internal
 	{
-		require(self.pOrdering[voter] == 0 && now < self.expirationTime);
-
-		self.pOrdering[voter] = self.participants.length;
-		self.participants.push(voter);
+		self.pOrdering[submitter] = self.participants.length;
+		self.participants.push(submitter);
 		self.binaryPreds.push(i);
 		self.metaPreds.push(p);
 	}
@@ -52,5 +49,5 @@ library Mechanism {
 
 	function getParent(M storage self) constant returns (address) {
 		return self.parentContract;
-	}
+	}	
 }
