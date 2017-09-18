@@ -15,7 +15,7 @@ contract RBTSMechanism {
 
 	event VoteSubmission(uint128 binary, uint128 meta, address submitter);
 
-	function RBTSMechanism(address manager, bytes32 question) {
+	function RBTSMechanism(address manager, string question) {
 		designer = manager;
 		participantCount = 0;
 		mechanism.init(question);

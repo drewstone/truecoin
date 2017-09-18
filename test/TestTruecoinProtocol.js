@@ -42,7 +42,11 @@ contract('TruecoinProtocol', (accounts) => {
       return protocol.createNewMechanism.call(question, mechanismType, {from: accounts[0]})
       .then(success => {
         assert.ok(success);
-      });
+        return protocol.createNewMechanism(question, mechanismType, {from: accounts[0]});
+      })
+      .then(txHash => assert.notEqual(txHash, null))
+      .then(() => protocol.createNewMechanism.call(question, mechanismType, {from: accounts[0]}))
+      .then(success => assert.notEqual(success, true));
     });
   });
 });

@@ -2,7 +2,7 @@ pragma solidity ^0.4.10;
 
 library Mechanism {
 	struct M {
-		bytes32 question;
+		string question;
 		address parentContract;
 		uint8[] events;
 		mapping (address => uint) pOrdering;
@@ -10,10 +10,9 @@ library Mechanism {
 		uint128[] binaryPreds;
 		uint128[] metaPreds;
 		uint256 initiationTime;
-		bytes32 predictedOutcome;
 	}
 
-	function init(M storage self, bytes32 question)
+	function init(M storage self, string question)
 		internal
 	{
 		require(self.initiationTime == 0);

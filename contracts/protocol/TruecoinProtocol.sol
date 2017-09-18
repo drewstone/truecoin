@@ -2,17 +2,20 @@ pragma solidity ^0.4.10;
 
 import '../mechanism/RBTSMechanism.sol';
 import '../token/Truecoin.sol';
+import '../util/StringUtils.sol';
 
 /**
  * This contract handles the Truecoin protocol
  */
 contract TruecoinProtocol {
+	using StringUtils for string;
+
 	address public TRC;
 	uint public rewardInterval;
 	uint public lastRewardTime;
 
 	struct MechanismWrappers {
-		mapping (bytes32 => address) RBTSIndex;
+		mapping (string => address) RBTSIndex;
 	}
 
 	MechanismWrappers[] mechanismWrappers;
@@ -24,10 +27,10 @@ contract TruecoinProtocol {
 		mechanismWrappers.length++;
 	}
 
-	function createNewMechanism(bytes32 question, bytes32 mechanismType) returns (bool) {
+	function createNewMechanism(string question, string mechanismType) returns (bool) {
 		uint index;
+
 		if (mechanismIndex[msg.sender] == 0) {
-			// Create space for new manager
 			index = mechanismWrappers.length++;
 			mechanismIndex[msg.sender] = index;
 		} else {
@@ -35,7 +38,7 @@ contract TruecoinProtocol {
 		}
 
 		// Create new manager and set new index place
-		if (mechanismType == 'RBTS') {
+		if (mechanismType.equal('RBTS')) {
 			if (mechanismWrappers[index].RBTSIndex[question] != address(0x0)) {
 				return false;
 			}
@@ -48,11 +51,11 @@ contract TruecoinProtocol {
 		return false;
 	}
 
-	function submitPrediction(address manager, bytes32 mechanismType, bytes32 question, uint128 i, uint128 p) returns (bool) {
+	function submitPrediction(address manager, string mechanismType, string question, uint128 i, uint128 p) returns (bool) {
 		// Assert manager exists
 		uint index = mechanismIndex[manager];
 
-		if (mechanismType == 'RBTS') {
+		if (mechanismType.equal('RBTS')) {
 			require(mechanismWrappers[index].RBTSIndex[question] != address(0x0));
 			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
 			m.submit(i, p, msg.sender);
