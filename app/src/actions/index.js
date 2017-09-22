@@ -9,7 +9,7 @@ export const screenActions = {
 
 export const predictionActions = {
   binaryVote: (data, value) => ({
-    type: constants.predictionActions.VOTE,
+    type: constants.userActions.ADD_PREDICTION,
     payload: { data, value },
   }),
 };

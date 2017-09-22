@@ -1,11 +1,7 @@
 import { combineReducers } from 'redux';
-import {
-  screens,
-  screenActions,
-  predictionActions,
-} from '../constants';
+import { screens, screenActions, userActions } from '../constants';
 
-const screenReducer = (state = screens.HOME, action) => {
+const screenReducer = (state = screens.MENU, action) => {
   const { type, payload } = action;
 
   switch (type) {
@@ -20,7 +16,7 @@ const predictionReducer = (state = [], action) => {
   const { type, payload } = action;
 
   switch (type) {
-    case predictionActions.VOTE:
+    case userActions.ADD_PREDICTION:
       return state.map(elt => {
         if (elt.id === payload.data.id) {
           if (payload.value) {

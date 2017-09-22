@@ -1,24 +1,19 @@
-// SCREEN CONSTANTS
 export const screens = {
-  HOME: 'HOME',
-  DEMO: 'DEMO',
+  MENU: 'MENU',
+  PREDICT: 'PREDICT',
+  POST: 'POST',
 };
-
-export const options = {
-  ADD_PREDICTION: 'ADD_PREDICTION',
-}
 
 export const screenActions = {
   SWITCH_TO: 'SWITCH_TO',
 };
 
-// ETHEREUM CONSTANTS
+export const userActions = {
+  ADD_POST: 'ADD_POST',
+  ADD_PREDICTION: 'ADD_PREDICTION',
+}
+
 export const ethereumActions = {
   CREATE_WALLET: 'CREATE_WALLET',
   RECOVER_WALLET: 'RECOVER_WALLET',
 }
-
-// PREDICTION CONSTANTS
-export const predictionActions = {
-  VOTE: 'VOTE',
-};

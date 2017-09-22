@@ -4,12 +4,11 @@ import { bindActionCreators } from 'redux';
 
 import { screenActions } from '../actions';
 import { screens } from '../constants';
-import HomeContainer from './HomeContainer';
-import DemoContainer from './DemoContainer';
+import NavbarContainer from './NavbarContainer';
+import MenuContainer from './MenuContainer';
 
 const screenContainerComponent = {
-  [screens.HOME]: HomeContainer,
-  [screens.DEMO]: DemoContainer,
+  [screens.MENU]: MenuContainer,
 };
 
 class App extends Component {
@@ -18,7 +17,9 @@ class App extends Component {
     const ScreenComponent = screenContainerComponent[currentScreen];
     
     return (
-      <ScreenComponent />
+      <NavbarContainer>
+        <ScreenComponent />
+      </NavbarContainer>
     );
   }
 }

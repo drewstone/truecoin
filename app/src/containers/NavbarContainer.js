@@ -1,24 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Web3Provider } from 'react-web3';
-
-import { screens, options } from '../constants';
+import { screens } from '../constants';
 import { screenActions, predictionActions } from '../actions';
-import Demo from '../components/demo';
+import Navbar from '../components/navbar';
 
-class DemoContainer extends Component {
+class NavbarContainer extends Component {
   render() {
     return (
-      <Web3Provider>
-        <Demo
-          data={this.props.predictions}
-          switchTo={this.props.screenActions.switchTo}
-          vote={this.props.predictionActions.binaryVote}
-          screens={screens}
-          options={options}
-        />
-      </Web3Provider>
+      <Navbar screens={screens} switchTo={this.props.screenActions.switchTo}>
+        { this.props.children }
+      </Navbar>
     );
   }
 }
@@ -35,4 +27,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(DemoContainer);
+)(NavbarContainer);
