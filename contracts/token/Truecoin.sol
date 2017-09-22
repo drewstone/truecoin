@@ -8,6 +8,6 @@ import 'zeppelin/contracts/token/MintableToken.sol';
 contract Truecoin is MintableToken {
 	function Truecoin(uint initialBalance) {
 		balances[msg.sender] = initialBalance;
-    	totalSupply = initialBalance;
+		totalSupply = initialBalance;
 	}
 }
