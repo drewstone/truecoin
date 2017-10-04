@@ -175,6 +175,7 @@ contract('TruecoinProtocol', (accounts) => {
     return TruecoinProtocol.new(100, 0).then(protocol => {
       const mechanismType = 'RBTS';
       const question = 'Is there a bringle in this image?';
+      const rewards = [1.75, 1.1875, 0.4375];
       const manager = accounts[0];
 
       const playerOne = accounts[1];
@@ -227,7 +228,6 @@ contract('TruecoinProtocol', (accounts) => {
       ]))
       .then(result => result.map(elt => web3.fromWei(elt.toNumber(), 'ether')))
       .then(result => {
-        const rewards = [1.75, 1.1875, 0.4375];
         assert.equal(result[0], rewards[0]);
         assert.equal(result[1], rewards[1]);
         assert.equal(result[2], rewards[2]);
