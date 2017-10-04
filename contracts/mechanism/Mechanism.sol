@@ -5,6 +5,7 @@ library Mechanism {
 		string question;
 		uint8[] events;
 		mapping (address => uint) pOrdering;
+		bool[] scored;
 		address[] participants;
 		uint128[] binaryPreds;
 		uint128[] metaPreds;
@@ -24,6 +25,7 @@ library Mechanism {
 		self.participants.push(submitter);
 		self.binaryPreds.push(i);
 		self.metaPreds.push(p);
+		self.scored.push(false);
 	}
 
 	function clear(M storage self) internal {
@@ -38,5 +40,10 @@ library Mechanism {
 
 	function getMetaPreds(M storage self) constant returns (address[], uint128[]) {
 		return (self.participants, self.metaPreds);
+	}
+
+	function isScored(M storage self, address participant) constant returns (bool) {
+		uint index = self.pOrdering[participant];
+		return self.scored[index-1];
 	}
 }

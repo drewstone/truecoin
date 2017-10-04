@@ -7,15 +7,21 @@ import { screens } from '../constants';
 import NavbarContainer from './NavbarContainer';
 import MenuContainer from './MenuContainer';
 
+import EthUtil from '../ethereum';
+
 const screenContainerComponent = {
   [screens.MENU]: MenuContainer,
 };
 
 class App extends Component {
+  componentDidMount() {
+    EthUtil();
+  }
+
   render() {
     const { currentScreen } = this.props;
     const ScreenComponent = screenContainerComponent[currentScreen];
-    
+
     return (
       <NavbarContainer>
         <ScreenComponent />

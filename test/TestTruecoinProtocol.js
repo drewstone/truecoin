@@ -1,3 +1,5 @@
+const Promise = require('bluebird');
+
 const RBTSMechanism = artifacts.require('./RBTSMechanism');
 const TruecoinProtocol = artifacts.require('./TruecoinProtocol');
 const Truecoin = artifacts.require('./Truecoin');
@@ -165,11 +167,133 @@ contract('TruecoinProtocol', (accounts) => {
         assert.equal(info[0][2].toString(), playerThree);
         assert.equal(info[1][2].toNumber(), 1);
         assert.equal(info[2][2].toNumber(), web3.toWei(0.75, 'ether'));
-        return protocol.claimScore(manager, mechanismType, question);
-      })
-      .then(score => {
-        console.log(score);
-      })
+      });
+    });
+  });
+
+  it('should score an RBTSMechanism with 3 voters', () => {
+    return TruecoinProtocol.new(100, 0).then(protocol => {
+      const mechanismType = 'RBTS';
+      const question = 'Is there a bringle in this image?';
+      const manager = accounts[0];
+
+      const playerOne = accounts[1];
+      const binaryPredOne = 1;
+      const metaPredOne = web3.toWei(1, 'ether');
+
+      const playerOneOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredOne,
+        metaPredOne,
+        {from: playerOne}
+      ];
+
+      const playerTwo = accounts[2];
+      const binaryPredTwo = 0;
+      const metaPredTwo = web3.toWei(0.25, 'ether');
+
+      const playerTwoOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredTwo,
+        metaPredTwo,
+        {from: playerTwo}
+      ];
+
+      const playerThree = accounts[3];
+      const binaryPredThree = 1;
+      const metaPredThree = web3.toWei(0.75, 'ether');
+
+      const playerThreeOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredThree,
+        metaPredThree,
+        {from: playerThree}
+      ];
+
+      return protocol.createNewMechanism(mechanismType, question)
+      .then(() => protocol.submitPrediction(...playerOneOpts))
+      .then(() => protocol.submitPrediction(...playerTwoOpts))
+      .then(() => protocol.submitPrediction(...playerThreeOpts))
+      .then(() => Promise.all([
+        protocol.claimReward.call(manager, mechanismType, question, {from: playerOne}),
+        protocol.claimReward.call(manager, mechanismType, question, {from: playerTwo}),
+        protocol.claimReward.call(manager, mechanismType, question, {from: playerThree})
+      ]))
+      .then(result => result.map(elt => web3.fromWei(elt.toNumber(), 'ether')))
+      .then(result => {
+        const rewards = [1.75, 1.1875, 0.4375];
+        assert.equal(result[0], rewards[0]);
+        assert.equal(result[1], rewards[1]);
+        assert.equal(result[2], rewards[2]);
+      });
+    });
+  });
+
+  it('should score 3 voters and mint new tokens from an RBTSMechanism', () => {
+    return TruecoinProtocol.new(0, 0).then(protocol => {
+      const mechanismType = 'RBTS';
+      const question = 'Is there a bringle in this image?';
+      const manager = accounts[0];
+
+      const playerOne = accounts[1];
+      const binaryPredOne = 1;
+      const metaPredOne = web3.toWei(1, 'ether');
+
+      const playerOneOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredOne,
+        metaPredOne,
+        {from: playerOne}
+      ];
+
+      const playerTwo = accounts[2];
+      const binaryPredTwo = 0;
+      const metaPredTwo = web3.toWei(0.25, 'ether');
+
+      const playerTwoOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredTwo,
+        metaPredTwo,
+        {from: playerTwo}
+      ];
+
+      const playerThree = accounts[3];
+      const binaryPredThree = 1;
+      const metaPredThree = web3.toWei(0.75, 'ether');
+
+      const playerThreeOpts = [
+        manager,
+        mechanismType,
+        question,
+        binaryPredThree,
+        metaPredThree,
+        {from: playerThree}
+      ];
+
+      return protocol.createNewMechanism(mechanismType, question)
+      .then(() => protocol.submitPrediction(...playerOneOpts))
+      .then(() => protocol.submitPrediction(...playerTwoOpts))
+      .then(() => protocol.submitPrediction(...playerThreeOpts))
+      .then(() => Promise.all([
+        protocol.claimReward(manager, mechanismType, question, {from: playerOne}),
+        protocol.claimReward(manager, mechanismType, question, {from: playerTwo}),
+        protocol.claimReward(manager, mechanismType, question, {from: playerThree})
+      ]))
+      .then(result => result.map(res => assert.notEqual(res, null)))
+      .then(() => protocol.TRC.call())
+      .then(address => Truecoin.at(address))
+      .then(trc => trc.totalSupply.call())
+      .then(supply => assert.ok(supply.toNumber() > 0));
     });
   });
 });

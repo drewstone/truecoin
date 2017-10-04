@@ -12,9 +12,6 @@ contract RBTSMechanism {
 	uint public participantCount;
 	uint public lastRewardTime;
 
-	event VoteSubmission(uint128 binary, uint128 meta, address submitter);
-	event ScoreDecision(uint128 score, address recipient);
-
 	function RBTSMechanism(address manager, string question) {
 		protocol = msg.sender;
 		designer = manager;
@@ -27,27 +24,25 @@ contract RBTSMechanism {
 
 		mechanism.submit(i, p, submitter);
 		participantCount = participantCount + 1;
-		VoteSubmission(i, p, submitter);
 	}
 
 	function score(address participant) isProtocol returns (uint128) {
 		require(mechanism.pOrdering[participant] != 0);
-		address[] memory participants = getParticipants();
-
-		uint i = mechanism.pOrdering[participant] - 1;
-		require(participants[i] == participant);
+		require(participantCount >= 3);
 
 		// Reference agent index j, peer agent index k
+		uint i = mechanism.pOrdering[participant] - 1;
+
+		require(!mechanism.scored[i]);
+		mechanism.scored[i] = true;
+
 		uint128 j = uint128((i+1) % participantCount);
 		uint128 k = uint128((i+2) % participantCount);
-
-		// User's utility to be outputted
-		uint128 u_i = 0;
-		uint128 y_iPrime = 0;
 
 		// User and reference agent's meta predictions (underlying distribution)
 		uint128 y_i = mechanism.metaPreds[i];
 		uint128 y_j = mechanism.metaPreds[j];
+		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
 		uint128 x_i = mechanism.binaryPreds[i];
@@ -62,8 +57,7 @@ contract RBTSMechanism {
 		}
 
 		// User's utility is sum of information and prediction scores
-		u_i = DSMath.wadd(RBTSQuadraticScoring(x_k, y_iPrime), RBTSQuadraticScoring(x_k, y_i));
-		return u_i;
+		return DSMath.wadd(RBTSQuadraticScoring(x_k, y_iPrime), RBTSQuadraticScoring(x_k, y_i));
 	}
 
 	function RBTSQuadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
@@ -101,8 +95,8 @@ contract RBTSMechanism {
 	}
 
 	modifier isProtocol() { 
-		if (msg.sender != protocol) throw; 
-		_; 
+		require(msg.sender == protocol); 
+		_;
 	}
 	
 }

@@ -1,0 +1,14 @@
+{
+  "contract_name": "EndogenousMechanism",
+  "abi": [
+    {
+      "inputs": [],
+      "payable": false,
+      "type": "constructor"
+    }
+  ],
+  "unlinked_binary": "0x60606040523415600e57600080fd5b5b5b5b603680601e6000396000f30060606040525b600080fd00a165627a7a72305820354b69b7f715ed50f56097132874cf8c02c4f55db3edd3209a88516837f288000029",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1506580454182
+}

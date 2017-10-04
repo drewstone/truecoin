@@ -24,27 +24,43 @@ module.exports = function() {
 function initialize(dirPath, artifactor) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath);
-  }
+  } 
 
   if (fs.readdirSync(dirPath).length == 0) {
-    return compile(artifactor);
+    return compile(artifactor, config.CONTRACTS_DIRECTORY);
   } else {
     return Promise.map(fs.readdirSync(dirPath), c => {
       let parsedContract = JSON.parse(fs.readFileSync(path.join(dirPath, c)));
       return artifactor.save(parsedContract);
     });
-  }  
+  }
 }
 
-function compile(artifactor) {
-  let data = fs.readdirSync(config.CONTRACTS_DIRECTORY);
-  data = data.map(c => ({
-    c,
-    data: fs.readFileSync(`${config.CONTRACTS_DIRECTORY}/${c}`).toString(),
-  }))
-  .reduce((prev, curr) => (Object.assign({}, prev, {[curr.c]: curr.data})), {});
+function compileDirectory(dirPath) {
+  let data = fs.readdirSync(dirPath);
+  return data.map(ctc => {
+    return { ctc, data: fs.readFileSync(`${dirPath}/${ctc}`).toString() };
+  });
+}
+
+function compile(artifactor, dirpath) {
+  let data = fs.readdirSync(dirpath);
   
-  const output = solc.compile({ sources: data }, 1);
+  let contractData = [];
+  for (ctc in data) {
+    if (data[ctc].split('.').length > 1) {
+      contractData.push({ ctc: data[ctc], data: fs.readFileSync(`${dirpath}/${data[ctc]}`).toString() });
+    } else {
+      compileDirectory(`${dirpath}/${data[ctc]}`).forEach(elt => {
+        contractData.push(elt);
+      });
+    }
+  }
+
+  // console.log(contractData);
+  contractData = contractData.reduce((prev, curr) => (Object.assign({}, prev, {[curr.ctc]: curr.data})), {});
+  
+  const output = solc.compile({ sources: contractData }, 1);
 
   const contracts = Object.keys(output.contracts).map(key => ({
       contract_name: key.split(':')[1],

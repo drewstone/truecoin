@@ -10,7 +10,7 @@ import '../util/StringUtils.sol';
 contract TruecoinProtocol {
 	using StringUtils for string;
 
-	address public TRC;
+	Truecoin public TRC;
 	uint public rewardInterval;
 	uint public lastRewardTime;
 
@@ -66,19 +66,23 @@ contract TruecoinProtocol {
 		}
 	}
 
-	function claimScore(address manager, string mechanismType, string question)
-		returns (uint128)
+	function claimReward(address manager, string mechanismType, string question)
+		returns (uint256)
 	{
 		require(mechanismIndex[manager] != 0);
 		uint index = mechanismIndex[manager];
+		uint128 score;
 
 		if (mechanismType.equal('RBTS')) {
 			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
-			uint128 score = m.score(msg.sender);
-			return score;
+			score = m.score(msg.sender);
 		} else {
-			return uint128(0);
+			return score;
 		}
+
+		uint256 reward = determineMintedTokens(score);
+		TRC.mint(msg.sender, reward);
+		return reward;
 	}
 
 	function getMechanism(address manager, string mechanismType, string question)
@@ -93,5 +97,9 @@ contract TruecoinProtocol {
 		} else {
 			return address(0x0);
 		}
+	}
+
+	function determineMintedTokens(uint128 score) constant returns (uint256) {
+		return uint256(score);
 	}
 }
