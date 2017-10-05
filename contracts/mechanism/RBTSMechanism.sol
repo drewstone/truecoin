@@ -12,11 +12,11 @@ contract RBTSMechanism {
 	uint public participantCount;
 	uint public lastRewardTime;
 
-	function RBTSMechanism(address manager, string question) {
+	function RBTSMechanism(address manager, uint8[] events, bytes32[] questions) {
 		protocol = msg.sender;
 		designer = manager;
 		participantCount = 0;
-		mechanism.init(question);
+		mechanism.init(events, questions);
 	}
 	
 	function submit(uint128 i, uint128 p, address submitter) isProtocol {
@@ -98,5 +98,4 @@ contract RBTSMechanism {
 		require(msg.sender == protocol); 
 		_;
 	}
-	
 }

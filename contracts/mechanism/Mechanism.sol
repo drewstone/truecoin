@@ -1,49 +1,51 @@
 pragma solidity ^0.4.10;
 
-library Mechanism {
-	struct M {
-		string question;
-		uint8[] events;
+contract Mechanism {
+	struct Task {
+		bytes32 question;
 		mapping (address => uint) pOrdering;
 		bool[] scored;
 		address[] participants;
 		uint128[] binaryPreds;
 		uint128[] metaPreds;
+	}
+
+	struct M {
+		Task[] tasks;
+		uint8[] events;
 		uint256 initiationTime;
+		mapping (bytes32 => uint) taskIndex;
 	}
 
-	function init(M storage self, string question) internal {
+	function init(M storage self, uint8[] events, bytes32[] questions) internal {
 		require(self.initiationTime == 0);
-		self.question = question;
-		self.events = [0,1];
+
+		self.tasks.length++;
+		self.events = events;
 		self.initiationTime = now;
-		self.participants.length++;
+
+		for (uint i = 0; i< questions.length; i++) {
+			self.taskIndex[questions[i]] = self.tasks.length;
+			self.tasks.push(Task(questions[i]));
+		}
 	}
 
-	function submit(M storage self, uint128 i, uint128 p, address submitter) internal {
-		self.pOrdering[submitter] = self.participants.length;
-		self.participants.push(submitter);
-		self.binaryPreds.push(i);
-		self.metaPreds.push(p);
-		self.scored.push(false);
+	function submit(M storage self, bytes32 question, uint128 i, uint128 p, address submitter) internal {
+		require(self.taskIndex[question] != 0);
+		Task t = self.tasks[self.taskIndex[question]];
+
+		require(t.pOrdering[submitter] == 0);
+		t.participants.push(submitter);
+		t.binaryPreds.push(i);
+		t.metaPreds.push(p);
+		t.scored.push(false);
+		t.pOrdering[submitter] = t.participants.length;
 	}
 
 	function clear(M storage self) internal {
 		delete self.participants;
 		delete self.binaryPreds;
 		delete self.metaPreds;
-	}
-
-	function getBinaryPreds(M storage self) constant returns (address[], uint128[]) {
-		return (self.participants, self.binaryPreds);
-	}
-
-	function getMetaPreds(M storage self) constant returns (address[], uint128[]) {
-		return (self.participants, self.metaPreds);
-	}
-
-	function isScored(M storage self, address participant) constant returns (bool) {
-		uint index = self.pOrdering[participant];
-		return self.scored[index-1];
+		self.participants.length++;
 	}
 }

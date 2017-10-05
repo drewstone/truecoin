@@ -1,6 +1,7 @@
 pragma solidity ^0.4.10;
 
 import '../mechanism/RBTSMechanism.sol';
+import '../mechanism/EndogenousMechanism.sol';
 import '../token/Truecoin.sol';
 import '../util/StringUtils.sol';
 
@@ -15,7 +16,7 @@ contract TruecoinProtocol {
 	uint public lastRewardTime;
 
 	struct MechanismWrappers {
-		mapping (string => address) RBTSIndex;
+		mapping (bytes32 => address) RBTSIndex;
 	}
 
 	MechanismWrappers[] mechanismWrappers;
@@ -27,7 +28,7 @@ contract TruecoinProtocol {
 		mechanismWrappers.length++;
 	}
 
-	function createNewMechanism(string mechanismType, string question) returns (bool) {
+	function createNewMechanism(string mechanismType, bytes32[] questions) returns (bool) {
 		uint index;
 
 		if (mechanismIndex[msg.sender] == 0) {
@@ -39,19 +40,21 @@ contract TruecoinProtocol {
 
 		// Create new manager and set new index place
 		if (mechanismType.equal('RBTS')) {
-			if (mechanismWrappers[index].RBTSIndex[question] != address(0x0)) {
+			if (mechanismWrappers[index].RBTSIndex[questions[0]] != address(0x0)) {
 				return false;
 			}
 
-			address rbts = new RBTSMechanism(msg.sender, question);
-			mechanismWrappers[index].RBTSIndex[question] = rbts;
+			address rbts = new RBTSMechanism(msg.sender, questions[0]);
+			mechanismWrappers[index].RBTSIndex[questions[0]] = rbts;
 			return true;
+		} else if (mechanismType.equal('ENDG')) {
+			address endg = new EndogenousMechanism(msg.sender, questions);
 		} else {
 			return false;
 		}
 	}
 
-	function submitPrediction(address manager, string mechanismType, string question, uint128 i, uint128 p)
+	function submitPrediction(address manager, string mechanismType, bytes32 question, uint128 i, uint128 p)
 		returns (bool)
 	{
 		require(mechanismIndex[manager] != 0);
@@ -61,12 +64,14 @@ contract TruecoinProtocol {
 			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
 			m.submit(i, p, msg.sender);
 			return true;
+		} else if (mechanismType.equal('ENDG')) {
+
 		} else {
 			return false;
 		}
 	}
 
-	function claimReward(address manager, string mechanismType, string question)
+	function claimReward(address manager, string mechanismType, bytes32 question)
 		returns (uint256)
 	{
 		require(mechanismIndex[manager] != 0);
@@ -85,7 +90,7 @@ contract TruecoinProtocol {
 		return reward;
 	}
 
-	function getMechanism(address manager, string mechanismType, string question)
+	function getMechanism(address manager, string mechanismType, bytes32 question)
 		constant returns (address)
 	{
 		require(mechanismIndex[manager] != 0);
