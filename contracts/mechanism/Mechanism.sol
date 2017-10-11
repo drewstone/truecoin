@@ -1,51 +1,37 @@
 pragma solidity ^0.4.10;
 
+import './MechanismLib.sol';
+
+/**
+ * This contract does this and that...
+ */
 contract Mechanism {
-	struct Task {
-		bytes32 question;
-		mapping (address => uint) pOrdering;
-		bool[] scored;
-		address[] participants;
-		uint128[] binaryPreds;
-		uint128[] metaPreds;
+	using MechanismLib for MechanismLib.M;
+	MechanismLib.M mechanism;
+	
+	address public manager;
+	address public designer;
+	mapping (bytes32 => uint) participantCount;
+
+	function Mechanism(address mechanismDesigner, uint8[] events, bytes32[] tasks) {
+		manager = msg.sender;
+		designer = mechanismDesigner;
+		mechanism.init(events, tasks);
 	}
 
-	struct M {
-		Task[] tasks;
-		uint8[] events;
-		uint256 initiationTime;
-		mapping (bytes32 => uint) taskIndex;
+	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) isManager {
+		mechanism.submit(taskId, signal, posterior, participant);
+		participantCount[taskId] = participantCount[taskId] + 1;
 	}
 
-	function init(M storage self, uint8[] events, bytes32[] questions) internal {
-		require(self.initiationTime == 0);
+	function getInfo(bytes32 taskId) constant returns (address[], uint128[], uint128[], uint8[]) {
+		var task = mechanism.tasks[mechanism.taskIndex[taskId]];
 
-		self.tasks.length++;
-		self.events = events;
-		self.initiationTime = now;
-
-		for (uint i = 0; i< questions.length; i++) {
-			self.taskIndex[questions[i]] = self.tasks.length;
-			self.tasks.push(Task(questions[i]));
-		}
+		return (task.participants, task.binaryPreds, task.metaPreds, mechanism.events);
 	}
 
-	function submit(M storage self, bytes32 question, uint128 i, uint128 p, address submitter) internal {
-		require(self.taskIndex[question] != 0);
-		Task t = self.tasks[self.taskIndex[question]];
-
-		require(t.pOrdering[submitter] == 0);
-		t.participants.push(submitter);
-		t.binaryPreds.push(i);
-		t.metaPreds.push(p);
-		t.scored.push(false);
-		t.pOrdering[submitter] = t.participants.length;
-	}
-
-	function clear(M storage self) internal {
-		delete self.participants;
-		delete self.binaryPreds;
-		delete self.metaPreds;
-		self.participants.length++;
+	modifier isManager() { 
+		require(msg.sender == manager); 
+		_;
 	}
 }
