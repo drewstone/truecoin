@@ -35,7 +35,6 @@ library MechanismLib {
 
 	function submit(M storage self, bytes32 taskId, uint128 i, uint128 p, address submitter) internal {
 		require(self.taskIndex[taskId] > 0);
-
 		for (uint inx = 0; inx < self.participants[taskId].length; inx++) {
 			require(self.participants[taskId][inx] != submitter);
 		}
