@@ -6,28 +6,28 @@ import './MechanismManager.sol';
  * This contract handles the Truecoin protocol
  */
 contract TruecoinProtocol {
-	address public mechMan;
+	MechanismManager public m;
 
 	event Initialized(address mechanismManager);
-	event MechanismCreation(address manager, uint8 mechanismId, bytes32 taskId);
+	event Creation(address manager, uint8 mechanismId, bytes32 taskId);
+	event Submission(address manager, bytes32 taskId, uint128 i, uint128 p);
 
-	function TruecoinProtocol(uint totalSupply, uint startInterval) {
+	function TruecoinProtocol() {
 	}
 
 	function initProtocol() {
-		address mechMan = new MechanismManager();
-		Initialized(mechMan);
+		m = new MechanismManager();
+		Initialized(m);
 	}
 
 	function createNewMechanism(uint8 mechanismId, uint8[] events, bytes32 taskId, bytes32[] tasks) returns (bool) {
-		MechanismManager m = MechanismManager(mechMan);
-		MechanismCreation(msg.sender, mechanismId, taskId);
+		Creation(msg.sender, mechanismId, taskId);
 		return m.create(msg.sender, mechanismId, events, taskId, tasks);
 	}
 
-	function submitPrediction(address manager, uint8 mechanismId, bytes32 taskId, bytes32 task, uint128 i, uint128 p) returns (bool) {
-		MechanismManager m = MechanismManager(mechMan);
-		return m.submit(manager, mechanismId, taskId, task, i, p, msg.sender);
+	function submitPrediction(address manager, uint8 mechanismId, bytes32 taskId, uint128 i, uint128 p) returns (bool) {
+		Submission(manager, taskId, i, p);
+		return m.submit(manager, mechanismId, taskId, i, p, msg.sender);
 	}
 
 	function determineMintedTokens(uint128 score) constant returns (uint256) {

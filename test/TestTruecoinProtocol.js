@@ -24,9 +24,10 @@ contract('TruecoinProtocol', (accounts) => {
     const mechanismId = 1;
     const events = [0,1];
     const taskId = 1;
-    const tasks = ['']
+    const tasks = ['This is a task'];
     result = await protocol.createNewMechanism(mechanismId, events, taskId, tasks);
-    console.log(result);
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Creation');
   });
 });
 

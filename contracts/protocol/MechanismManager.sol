@@ -19,7 +19,7 @@ contract MechanismManager {
 		mechanismWrappers.length++;
 	}
 
-	function create(address designer, uint8 mechanismId, uint8[] events, bytes32 taskId, bytes32[] tasks) isProtocol returns (bool) {
+	function create(address designer, uint8 mechanismId, uint8[] events, bytes32 taskId, bytes32[] tasks) returns (bool) {
 		if (mechanismIndex[designer] == 0) {
 			mechanismIndex[designer] = mechanismWrappers.length++;
 		}
@@ -39,7 +39,7 @@ contract MechanismManager {
 		return true;
 	}
 
-	function submit(address designer, uint8 mechanismId, bytes32 taskId, bytes32 task, uint128 i, uint128 p, address participant) isProtocol returns (bool) {
+	function submit(address designer, uint8 mechanismId, bytes32 taskId, uint128 i, uint128 p, address participant) returns (bool) {
 		require(mechanismIndex[designer] > 0);
 		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
 
@@ -62,10 +62,5 @@ contract MechanismManager {
 		}
 
 		return true;
-	}
-
-	modifier isProtocol() { 
-		require(msg.sender != protocol);
-		_; 
 	}
 }
