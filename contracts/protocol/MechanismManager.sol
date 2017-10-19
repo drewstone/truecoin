@@ -19,7 +19,7 @@ contract MechanismManager {
 		mechanismWrappers.length++;
 	}
 
-	function create(address designer, uint8 mechanismId, uint8[] events, bytes32 taskId, bytes32[] tasks) returns (bool) {
+	function create(address designer, uint8 mechanismId, uint8[] events, bytes32 name, bytes32[] taskIds) returns (bool) {
 		if (mechanismIndex[designer] == 0) {
 			mechanismIndex[designer] = mechanismWrappers.length++;
 		}
@@ -27,11 +27,11 @@ contract MechanismManager {
 		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
 
 		if (mechanismId == 1) {
-			RBTSMechanism r = new RBTSMechanism(designer, events, tasks);
-			w.RBTSIndex[taskId] = r;
+			RBTSMechanism r = new RBTSMechanism(designer, events, taskIds);
+			w.RBTSIndex[name] = r;
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = new EndogenousMechanism(designer, events, tasks);
-			w.ENDGIndex[taskId] = e;
+			EndogenousMechanism e = new EndogenousMechanism(designer, events, taskIds);
+			w.ENDGIndex[name] = e;
 		} else {
 			return false;
 		}
@@ -39,15 +39,15 @@ contract MechanismManager {
 		return true;
 	}
 
-	function submit(address designer, uint8 mechanismId, bytes32 taskId, uint128 i, uint128 p, address participant) returns (bool) {
+	function submit(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 i, uint128 p, address participant) returns (bool) {
 		require(mechanismIndex[designer] > 0);
 		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
 
 		if (mechanismId == 1) {
-			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[taskId]);
+			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
 			r.submit(taskId, i, p, participant);
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[taskId]);
+			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
 			e.submit(taskId, i, p, participant);
 		} else if (mechanismId == 3) {
 
@@ -62,5 +62,49 @@ contract MechanismManager {
 		}
 
 		return true;
+	}
+
+	function score(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, address participant) returns (uint128) {
+		require(mechanismIndex[designer] > 0);
+		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
+
+		if (mechanismId == 1) {
+			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
+			return r.score(taskId, participant);
+		} else if (mechanismId == 2) {
+			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
+			return e.score(taskId, participant);
+		} else if (mechanismId == 3) {
+
+		} else if (mechanismId == 4) {
+
+		} else if (mechanismId == 5) {
+
+		} else if (mechanismId == 6) {
+
+		}
+
+		return 0;
+	}
+
+	function get(address designer, uint8 mechanismId, bytes32 name) returns (address) {
+		require(mechanismIndex[designer] > 0);
+		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
+
+		if (mechanismId == 1) {
+			return w.RBTSIndex[name];
+		} else if (mechanismId == 2) {
+			return w.ENDGIndex[name];
+		} else if (mechanismId == 3) {
+
+		} else if (mechanismId == 4) {
+
+		} else if (mechanismId == 5) {
+
+		} else if (mechanismId == 6) {
+
+		}
+
+		return address(0x0);
 	}
 }
