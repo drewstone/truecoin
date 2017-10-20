@@ -25,7 +25,7 @@ contract RBTSMechanism {
 
 		// Reference agent index j, peer agent index k
 		uint i = mechanism.getParticipantIndex(taskId, participant);
-		require(i != -1);
+		require(i != 999999999);
 
 		require(!mechanism.scored[taskId][i]);
 		mechanism.scored[taskId][i] = true;

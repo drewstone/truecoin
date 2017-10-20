@@ -17,6 +17,8 @@ module.exports = function(deployer) {
   deployer.link(DSMath, TruecoinProtocol);
   deployer.link(MechanismLib, RBTSMechanism);
   deployer.link(MechanismLib, EndogenousMechanism);
+  deployer.link(MechanismLib, MechanismManager);
+  deployer.link(MechanismLib, TruecoinProtocol);
   
   // Mechanisms
   deployer.deploy(RBTSMechanism);

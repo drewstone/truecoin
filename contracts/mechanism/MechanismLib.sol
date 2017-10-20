@@ -51,9 +51,9 @@ library MechanismLib {
 			self.participants.push(submitter);
 			self.participantIndex[taskId].push(self.participants.length - 1);
 		} else {
-			uint memory tempTaskIndex = self.answeredTaskIndex[submitter][0];
-			bytes32 memory taskId = self.taskIds[tempTaskIndex];
-			self.participantIndex[taskId].push(self.getParticipantIndex(taskId, submitter))
+			uint tempTaskIndex = self.answeredTaskIndex[submitter][0];
+			bytes32 tId = self.taskIds[tempTaskIndex];
+			self.participantIndex[taskId].push(getParticipantIndex(self, tId, submitter));
 		}
 
 		self.binaryPreds[taskId].push(i);
@@ -77,6 +77,7 @@ library MechanismLib {
 			}
 		}
 
-		return -1;
+		// hardcoded error amount
+		return 999999999;
 	}
 }
