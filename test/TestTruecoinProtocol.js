@@ -5,296 +5,102 @@ const TruecoinProtocol = artifacts.require('./TruecoinProtocol');
 const Truecoin = artifacts.require('./Truecoin');
 
 contract('TruecoinProtocol', (accounts) => {
-  it('should ensure a blank protocol creates a defunct Truecoin token', () => {
-    return TruecoinProtocol.deployed().then(protocol => {
-      return protocol.TRC.call()
-      .then(address => {
-        assert.notEqual(null, address);
-        return Truecoin.at(address);
-      })
-      .then(trc => {
-        return trc.totalSupply.call()
-        .then(supply => {
-          assert.equal(supply.toNumber(), 0);
-        });
-      });
-    });
+  let protocol;
+
+  beforeEach(async function() {
+    protocol = await TruecoinProtocol.new();
   });
 
-  it('should create a protocol with 100 TRC', () => {
-    return TruecoinProtocol.new(100, 0).then(protocol => {
-      return protocol.TRC.call()
-      .then(address => {
-        assert.notEqual(null, address);
-        return Truecoin.at(address);
-      })
-      .then(trc => {
-        return trc.totalSupply.call()
-        .then(supply => {
-          assert.equal(supply.toNumber(), 100);
-        });
-      });
-    });
+  it('should initialize the protocol', async function() {
+    let result = await protocol.initProtocol();
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Initialized');
   });
 
-  it('should create a protocol and a mechanism only once', () => {
-    return TruecoinProtocol.new(100, 0).then(protocol => {
-      const question = 'Is there a bringle in this image?';
-      const mechanismType = 'RBTS';
+  it('should create a new RBTS mechanism', async function() {
+    let result = await protocol.initProtocol();
+    assert.notEqual(result, null);
 
-      return protocol.createNewMechanism.call(mechanismType, question, {from: accounts[0]})
-      .then(success => {
-        assert.ok(success);
-        return protocol.createNewMechanism(mechanismType, question, {from: accounts[0]});
-      })
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.createNewMechanism.call(mechanismType, question, {from: accounts[0]}))
-      .then(success => assert.notEqual(success, true));
-    });
+    const mechanismId = 1;
+    const events = [0,1];
+    const name = 'New mechanism name';
+    const taskIds = ['taskId'];
+    result = await protocol.createNewMechanism(mechanismId, events, name, taskIds);
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Creation');
   });
 
-  it('should create an RBTSMechanism and submit 1 RBTS prediction', () => {
-    return TruecoinProtocol.new(100, 0).then(protocol => {
-      const mechanismType = 'RBTS';
-      const question = 'Is there a bringle in this image?';
-      const manager = accounts[0];
-      const player = accounts[1];
-      const binaryPred = 1;
-      const metaPred = web3.toWei(1, 'ether');
-      const playerOneOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPred,
-        metaPred,
-        {from: player}
-      ];
+  it('should submit 3 participants predictions to an RBTS mechanism', async function() {
+    await protocol.initProtocol();
 
-      return protocol.createNewMechanism(mechanismType, question)
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.submitPrediction.call(...playerOneOpts))
-      .then(success => assert.ok(success))
-      .then(() => protocol.submitPrediction(...playerOneOpts))
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.getMechanism.call(manager, mechanismType, question))
-      .then(addr => {
-        assert.notEqual(addr, null);
-        return RBTSMechanism.at(addr);
-      })
-      .then(rbts => {
-        assert.notEqual(rbts, null);
-        return rbts.getInfo.call();
-      })
-      .then(info => {
-        assert.notEqual(info, null);
-        assert.equal(info[0][0].toString(), player);
-        assert.equal(info[1][0].toNumber(), 1);
-        assert.equal(info[2][0].toNumber(), web3.toWei(1, 'ether'));
-      });
-    });
+    const manager = accounts[0];
+    const p1 = accounts[1];
+    const p2 = accounts[2];
+    const p3 = accounts[3];
+
+    const mechanismId = 1;
+    const events = [0,1];
+    const name = 'New mechanism name';
+    const taskIds = ['taskId'];
+    await protocol.createNewMechanism(mechanismId, events, name, taskIds);
+    
+    let result = await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(0.5, 'ether'), {from: p1});
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Submission');
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.i.toNumber(), 1);
+    assert.equal(result.logs[0].args.p.toNumber(), web3.toWei(0.5, 'ether'));
+    
+    result = await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(0.75, 'ether'), {from: p2});
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Submission');
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.i.toNumber(), 1);
+    assert.equal(result.logs[0].args.p.toNumber(), web3.toWei(0.75, 'ether'));
+    
+    result = await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(1.0, 'ether'), {from: p3});
+    assert.ok(result.logs.length > 0);
+    assert.equal(result.logs[0].event, 'Submission');
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.i.toNumber(), 1);
+    assert.equal(result.logs[0].args.p.toNumber(), web3.toWei(1.0, 'ether'));
+
+    result = await protocol.getMechanism(manager, mechanismId, name);
+    const rbts = await RBTSMechanism.at(result);
+
+    result = await rbts.info();
+    assert.equal(result[0].length, 3);
+    assert.ok(web3.toAscii(result[1][0]).includes('taskId'));
   });
 
-  it('should create and submit an RBTSMechanism with 3 voters', () => {
-    return TruecoinProtocol.new(100, 0).then(protocol => {
-      const mechanismType = 'RBTS';
-      const question = 'Is there a bringle in this image?';
-      const manager = accounts[0];
+  it('should score 3 predictions to an RBTS mechanism', async function() {
+    await protocol.initProtocol();
 
-      const playerOne = accounts[1];
-      const binaryPredOne = 1;
-      const metaPredOne = web3.toWei(1, 'ether');
+    const manager = accounts[0];
+    const p1 = accounts[1];
+    const p2 = accounts[2];
+    const p3 = accounts[3];
 
-      const playerOneOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredOne,
-        metaPredOne,
-        {from: playerOne}
-      ];
+    const mechanismId = 1;
+    const events = [0,1];
+    const name = 'New mechanism name';
+    const taskIds = ['taskId'];
+    await protocol.createNewMechanism(mechanismId, events, name, taskIds);
+    await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(0.5, 'ether'), {from: p1});
+    await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(0.75, 'ether'), {from: p2});
+    await protocol.submitPrediction(manager, mechanismId, name, taskIds[0], 1, web3.toWei(1.0, 'ether'), {from: p3});
 
-      const playerTwo = accounts[2];
-      const binaryPredTwo = 0;
-      const metaPredTwo = web3.toWei(0.25, 'ether');
+    let result = await protocol.claimScore(manager, mechanismId, name, taskIds[0], {from: p1});
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.participant, p1);
 
-      const playerTwoOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredTwo,
-        metaPredTwo,
-        {from: playerTwo}
-      ];
+    result = await protocol.claimScore(manager, mechanismId, name, taskIds[0], {from: p2});
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.participant, p2);
 
-      const playerThree = accounts[3];
-      const binaryPredThree = 1;
-      const metaPredThree = web3.toWei(0.75, 'ether');
-
-      const playerThreeOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredThree,
-        metaPredThree,
-        {from: playerThree}
-      ];
-
-      return protocol.createNewMechanism(mechanismType, question)
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.submitPrediction(...playerOneOpts))
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.submitPrediction(...playerTwoOpts))
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.submitPrediction(...playerThreeOpts))
-      .then(txHash => assert.notEqual(txHash, null))
-      .then(() => protocol.getMechanism.call(manager, mechanismType, question))
-      .then(addr => {
-        assert.notEqual(addr, null);
-        return RBTSMechanism.at(addr);
-      })
-      .then(rbts => {
-        assert.notEqual(rbts, null);
-        return rbts.getInfo.call();
-      })
-      .then(info => {
-        assert.notEqual(info, null);
-        assert.equal(info[0][0].toString(), playerOne);
-        assert.equal(info[1][0].toNumber(), 1);
-        assert.equal(info[2][0].toNumber(), web3.toWei(1, 'ether'));
-        assert.equal(info[0][1].toString(), playerTwo);
-        assert.equal(info[1][1].toNumber(), 0);
-        assert.equal(info[2][1].toNumber(), web3.toWei(0.25, 'ether'));
-        assert.equal(info[0][2].toString(), playerThree);
-        assert.equal(info[1][2].toNumber(), 1);
-        assert.equal(info[2][2].toNumber(), web3.toWei(0.75, 'ether'));
-      });
-    });
-  });
-
-  it('should score an RBTSMechanism with 3 voters', () => {
-    return TruecoinProtocol.new(100, 0).then(protocol => {
-      const mechanismType = 'RBTS';
-      const question = 'Is there a bringle in this image?';
-      const manager = accounts[0];
-
-      const playerOne = accounts[1];
-      const binaryPredOne = 1;
-      const metaPredOne = web3.toWei(1, 'ether');
-
-      const playerOneOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredOne,
-        metaPredOne,
-        {from: playerOne}
-      ];
-
-      const playerTwo = accounts[2];
-      const binaryPredTwo = 0;
-      const metaPredTwo = web3.toWei(0.25, 'ether');
-
-      const playerTwoOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredTwo,
-        metaPredTwo,
-        {from: playerTwo}
-      ];
-
-      const playerThree = accounts[3];
-      const binaryPredThree = 1;
-      const metaPredThree = web3.toWei(0.75, 'ether');
-
-      const playerThreeOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredThree,
-        metaPredThree,
-        {from: playerThree}
-      ];
-
-      return protocol.createNewMechanism(mechanismType, question)
-      .then(() => protocol.submitPrediction(...playerOneOpts))
-      .then(() => protocol.submitPrediction(...playerTwoOpts))
-      .then(() => protocol.submitPrediction(...playerThreeOpts))
-      .then(() => Promise.all([
-        protocol.claimReward.call(manager, mechanismType, question, {from: playerOne}),
-        protocol.claimReward.call(manager, mechanismType, question, {from: playerTwo}),
-        protocol.claimReward.call(manager, mechanismType, question, {from: playerThree})
-      ]))
-      .then(result => result.map(elt => web3.fromWei(elt.toNumber(), 'ether')))
-      .then(result => {
-        const rewards = [1.75, 1.1875, 0.4375];
-        assert.equal(result[0], rewards[0]);
-        assert.equal(result[1], rewards[1]);
-        assert.equal(result[2], rewards[2]);
-      });
-    });
-  });
-
-  it('should score 3 voters and mint new tokens from an RBTSMechanism', () => {
-    return TruecoinProtocol.new(0, 0).then(protocol => {
-      const mechanismType = 'RBTS';
-      const question = 'Is there a bringle in this image?';
-      const manager = accounts[0];
-
-      const playerOne = accounts[1];
-      const binaryPredOne = 1;
-      const metaPredOne = web3.toWei(1, 'ether');
-
-      const playerOneOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredOne,
-        metaPredOne,
-        {from: playerOne}
-      ];
-
-      const playerTwo = accounts[2];
-      const binaryPredTwo = 0;
-      const metaPredTwo = web3.toWei(0.25, 'ether');
-
-      const playerTwoOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredTwo,
-        metaPredTwo,
-        {from: playerTwo}
-      ];
-
-      const playerThree = accounts[3];
-      const binaryPredThree = 1;
-      const metaPredThree = web3.toWei(0.75, 'ether');
-
-      const playerThreeOpts = [
-        manager,
-        mechanismType,
-        question,
-        binaryPredThree,
-        metaPredThree,
-        {from: playerThree}
-      ];
-
-      return protocol.createNewMechanism(mechanismType, question)
-      .then(() => protocol.submitPrediction(...playerOneOpts))
-      .then(() => protocol.submitPrediction(...playerTwoOpts))
-      .then(() => protocol.submitPrediction(...playerThreeOpts))
-      .then(() => Promise.all([
-        protocol.claimReward(manager, mechanismType, question, {from: playerOne}),
-        protocol.claimReward(manager, mechanismType, question, {from: playerTwo}),
-        protocol.claimReward(manager, mechanismType, question, {from: playerThree})
-      ]))
-      .then(result => result.map(res => assert.notEqual(res, null)))
-      .then(() => protocol.TRC.call())
-      .then(address => Truecoin.at(address))
-      .then(trc => trc.totalSupply.call())
-      .then(supply => assert.ok(supply.toNumber() > 0));
-    });
+    result = await protocol.claimScore(manager, mechanismId, name, taskIds[0], {from: p3});
+    assert.equal(result.logs[0].args.manager, manager);
+    assert.equal(result.logs[0].args.participant, p3);
   });
 });
 

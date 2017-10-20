@@ -1,105 +1,46 @@
 pragma solidity ^0.4.10;
 
-import '../mechanism/RBTSMechanism.sol';
-import '../token/Truecoin.sol';
-import '../util/StringUtils.sol';
+import './MechanismManager.sol';
 
 /**
  * This contract handles the Truecoin protocol
  */
 contract TruecoinProtocol {
-	using StringUtils for string;
+	MechanismManager public m;
 
-	Truecoin public TRC;
-	uint public rewardInterval;
-	uint public lastRewardTime;
+	event Initialized(address mechanismManager);
+	event Creation(address manager, uint8 mechanismId, bytes32 name, bytes32[] taskIds);
+	event Submission(address manager, bytes32 taskId, uint128 i, uint128 p);
+	event Score(address manager, address participant, bytes32 name, uint128 score);
 
-	struct MechanismWrappers {
-		mapping (string => address) RBTSIndex;
+	function TruecoinProtocol() {
 	}
 
-	MechanismWrappers[] mechanismWrappers;
-	mapping (address => uint) mechanismIndex;
-
-	function TruecoinProtocol(uint totalSupply, uint startInterval) {
-		TRC = new Truecoin(totalSupply);
-		rewardInterval = startInterval;
-		mechanismWrappers.length++;
+	function initProtocol() {
+		m = new MechanismManager();
+		Initialized(m);
 	}
 
-	function createNewMechanism(string mechanismType, string question) returns (bool) {
-		uint index;
-
-		if (mechanismIndex[msg.sender] == 0) {
-			index = mechanismWrappers.length++;
-			mechanismIndex[msg.sender] = index;
-		} else {
-			index = mechanismIndex[msg.sender];
-		}
-
-		// Create new manager and set new index place
-		if (mechanismType.equal('RBTS')) {
-			if (mechanismWrappers[index].RBTSIndex[question] != address(0x0)) {
-				return false;
-			}
-
-			address rbts = new RBTSMechanism(msg.sender, question);
-			mechanismWrappers[index].RBTSIndex[question] = rbts;
-			return true;
-		} else {
-			return false;
-		}
+	function createNewMechanism(uint8 mechanismId, uint8[] events, bytes32 name, bytes32[] taskIds) returns (bool) {
+		Creation(msg.sender, mechanismId, name, taskIds);
+		return m.create(msg.sender, mechanismId, events, name, taskIds);
 	}
 
-	function submitPrediction(address manager, string mechanismType, string question, uint128 i, uint128 p)
-		returns (bool)
-	{
-		require(mechanismIndex[manager] != 0);
-		uint index = mechanismIndex[manager];
-
-		if (mechanismType.equal('RBTS')) {
-			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
-			m.submit(i, p, msg.sender);
-			return true;
-		} else {
-			return false;
-		}
+	function submitPrediction(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 i, uint128 p) returns (bool) {
+		Submission(manager, taskId, i, p);
+		return m.submit(manager, mechanismId, name, taskId, i, p, msg.sender);
 	}
 
-	function claimReward(address manager, string mechanismType, string question)
-		returns (uint256)
-	{
-		require(mechanismIndex[manager] != 0);
-		uint index = mechanismIndex[manager];
-		uint128 score;
-
-		if (mechanismType.equal('RBTS')) {
-			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
-			score = m.score(msg.sender);
-		} else {
-			return score;
-		}
-
-		uint256 reward = determineMintedTokens(score);
-		TRC.mint(msg.sender, reward);
-		return reward;
-	}
-
-	function getMechanism(address manager, string mechanismType, string question)
-		constant returns (address)
-	{
-		require(mechanismIndex[manager] != 0);
-		uint index = mechanismIndex[manager];
-
-		if (mechanismType.equal('RBTS')) {
-			RBTSMechanism m = RBTSMechanism(mechanismWrappers[index].RBTSIndex[question]);
-			return address(m);
-		} else {
-			return address(0x0);
-		}
+	function claimScore(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId) returns (bool) {
+		uint128 score = m.score(manager, mechanismId, name, taskId, msg.sender);
+		Score(manager, msg.sender, name, score);
 	}
 
 	function determineMintedTokens(uint128 score) constant returns (uint256) {
 		return uint256(score);
+	}
+
+	function getMechanism(address manager, uint8 mechanismId, bytes32 name) constant returns (address) {
+		return m.get(manager, mechanismId, name);
 	}
 }

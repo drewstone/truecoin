@@ -1,52 +1,46 @@
 pragma solidity ^0.4.10;
 
 import '../math/DSMath.sol';
-import './Mechanism.sol';
+import './MechanismLib.sol';
 
 contract RBTSMechanism {
-	using Mechanism for Mechanism.M;
-	Mechanism.M mechanism;
+	using MechanismLib for MechanismLib.M;
+	MechanismLib.M mechanism;
 	
-	address public protocol;
+	address public manager;
 	address public designer;
-	uint public participantCount;
-	uint public lastRewardTime;
 
-	function RBTSMechanism(address manager, string question) {
-		protocol = msg.sender;
-		designer = manager;
-		participantCount = 0;
-		mechanism.init(question);
-	}
-	
-	function submit(uint128 i, uint128 p, address submitter) isProtocol {
-		require(mechanism.pOrdering[submitter] == 0);
-
-		mechanism.submit(i, p, submitter);
-		participantCount = participantCount + 1;
+	function RBTSMechanism(address mechanismDesigner, uint8[] events, bytes32[] taskIds) {
+		manager = msg.sender;
+		designer = mechanismDesigner;
+		mechanism.init(events, taskIds);
 	}
 
-	function score(address participant) isProtocol returns (uint128) {
-		require(mechanism.pOrdering[participant] != 0);
-		require(participantCount >= 3);
+	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {
+		mechanism.submit(taskId, signal, posterior, participant);
+	}
+
+	function score(bytes32 taskId, address participant) returns (uint128) {
+		require(mechanism.participantIndex[taskId].length >= 3);
 
 		// Reference agent index j, peer agent index k
-		uint i = mechanism.pOrdering[participant] - 1;
+		uint i = mechanism.getParticipantIndex(taskId, participant);
+		require(i != 999999999);
 
-		require(!mechanism.scored[i]);
-		mechanism.scored[i] = true;
+		require(!mechanism.scored[taskId][i]);
+		mechanism.scored[taskId][i] = true;
 
-		uint128 j = uint128((i+1) % participantCount);
-		uint128 k = uint128((i+2) % participantCount);
+		uint128 j = uint128((i+1) % mechanism.participants.length);
+		uint128 k = uint128((i+2) % mechanism.participants.length);
 
 		// User and reference agent's meta predictions (underlying distribution)
-		uint128 y_i = mechanism.metaPreds[i];
-		uint128 y_j = mechanism.metaPreds[j];
+		uint128 y_i = mechanism.metaPreds[taskId][i];
+		uint128 y_j = mechanism.metaPreds[taskId][j];
 		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
-		uint128 x_i = mechanism.binaryPreds[i];
-		uint128 x_k = mechanism.binaryPreds[k];
+		uint128 x_i = mechanism.binaryPreds[taskId][i];
+		uint128 x_k = mechanism.binaryPreds[taskId][k];
 
 		uint128 delta = DSMath.wmin(y_j, DSMath.wsub(1 ether, y_j));
 
@@ -68,35 +62,7 @@ contract RBTSMechanism {
 		}
 	}
 
-	function getParticipants() constant returns (address[]) {
-		uint participantLength = mechanism.participants.length - 1;
-		address[] memory participants = new address[](participantLength);
-		for (uint i = 0; i < participants.length; i++) {
-			participants[i] = mechanism.participants[i + 1];
-		}
-
-		return participants;
+	function info() constant returns (address[], bytes32[], uint8[], uint256) {
+		return mechanism.info();
 	}
-
-	function getBinaryPreds() constant returns (uint128[]) {
-		return mechanism.binaryPreds;
-	}
-
-	function getMetaPreds() constant returns (uint128[]) {
-		return mechanism.metaPreds;
-	}
-
-	function getEvents() constant returns (uint8[]) {
-		return mechanism.events;
-	}
-
-	function getInfo() constant returns (address[], uint128[], uint128[], uint8[]) {
-		return (getParticipants(), getBinaryPreds(), getMetaPreds(), getEvents());
-	}
-
-	modifier isProtocol() { 
-		require(msg.sender == protocol); 
-		_;
-	}
-	
 }
