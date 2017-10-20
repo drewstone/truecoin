@@ -24,13 +24,14 @@ contract RBTSMechanism {
 		require(mechanism.participantIndex[taskId].length >= 3);
 
 		// Reference agent index j, peer agent index k
-		uint i = getParticipantIndex(taskId, participant);
+		uint i = mechanism.getParticipantIndex(taskId, participant);
+		require(i != -1);
 
 		require(!mechanism.scored[taskId][i]);
 		mechanism.scored[taskId][i] = true;
 
-		uint128 j = uint128((i+1) % mechanism.participantIndex[taskId].length);
-		uint128 k = uint128((i+2) % mechanism.participantIndex[taskId].length);
+		uint128 j = uint128((i+1) % mechanism.participants.length);
+		uint128 k = uint128((i+2) % mechanism.participants.length);
 
 		// User and reference agent's meta predictions (underlying distribution)
 		uint128 y_i = mechanism.metaPreds[taskId][i];
@@ -59,17 +60,6 @@ contract RBTSMechanism {
 		} else {
 			return uint128(DSMath.wsub(1 ether, DSMath.wmul(p, p)));
 		}
-	}
-
-	function getParticipantIndex(bytes32 taskId, address participant) constant returns (uint) {
-		for (uint i = 0; i < mechanism.participantIndex[taskId].length; i++) {
-			uint pInx = mechanism.participantIndex[taskId][i];
-			if (mechanism.participants[pInx] == participant) {
-				return i;
-			}
-		}
-
-		return 0;
 	}
 
 	function info() constant returns (address[], bytes32[], uint8[], uint256) {

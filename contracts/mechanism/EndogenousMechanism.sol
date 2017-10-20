@@ -25,20 +25,18 @@ contract EndogenousMechanism {
 		return 0;
 	}
 
-	function getParticipantIndex(bytes32 taskId, address participant) constant returns (uint) {
-		for (uint i = 0; i < mechanism.participantIndex[taskId].length; i++) {
-			uint pInx = mechanism.participantIndex[taskId][i];
-			if (mechanism.participants[pInx] == participant) {
-				return i;
-			}
-		}
-
-		return 0;
-	}
-
 	function getOverlappingSets(bytes32 taskId, address participant) internal returns (bytes32[]) {
 		uint[] participantTasks = mechanism.answeredTaskIndex[participant];
-		uint i = getParticipantIndex(taskId, participant);
+		uint i = mechanism.getParticipantIndex(taskId, participant);
+		require(i != -1);
+
+		uint128 j = uint128((i+1) % mechanism.participants.length);
+		uint referenceAgent = mechanism.participants[j];
+
+		uint[] memory participantTasks = mechanism.answeredTaskIndex[participant];
+		uint[] memory referenceAgTasks = mechanism.answeredTaskIndex[referenceAgent];
+
+
 	}
 
 	function info() returns (address[], bytes32[], uint8[], uint256) {

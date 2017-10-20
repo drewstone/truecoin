@@ -49,9 +49,13 @@ library MechanismLib {
 		// If participant hasn't answered questions, add to list of participants
 		if (self.answeredTaskIndex[submitter].length == 0) {
 			self.participants.push(submitter);
+			self.participantIndex[taskId].push(self.participants.length - 1);
+		} else {
+			uint memory tempTaskIndex = self.answeredTaskIndex[submitter][0];
+			bytes32 memory taskId = self.taskIds[tempTaskIndex];
+			self.participantIndex[taskId].push(self.getParticipantIndex(taskId, submitter))
 		}
 
-		self.participantIndex[taskId].push(self.participants.length - 1);
 		self.binaryPreds[taskId].push(i);
 		self.metaPreds[taskId].push(p);
 		self.scored[taskId].push(false);
@@ -63,5 +67,16 @@ library MechanismLib {
 		b = self.taskIds;
 		c = self.events;
 		d = self.initiationTime;
+	}
+
+	function getParticipantIndex(M storage self, bytes32 taskId, address participant) constant returns (uint) {
+		for (uint i = 0; i < self.participantIndex[taskId].length; i++) {
+			uint pInx = self.participantIndex[taskId][i];
+			if (self.participants[pInx] == participant) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }
