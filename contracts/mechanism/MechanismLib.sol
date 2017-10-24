@@ -16,12 +16,22 @@ library MechanismLib {
 		uint8[] events;
 		uint256 initiationTime;
 
+		// Index of tasks (redundant for indexing and iteration)
 		mapping (bytes32 => uint) taskIndex;
+
+		// Participants that have answered a specific task
 		mapping (bytes32 => uint[]) participantIndex;
+
+		// Tasks answered by specific participant
 		mapping (address => uint[]) answeredTaskIndex;
 		
+		// Binary predictions for a task
 		mapping (bytes32 => uint128[]) binaryPreds;
+
+		// Meta predictions for a task
 		mapping (bytes32 => uint128[]) metaPreds;
+
+		// Scored statistics for a task indexed as in participantIndex
 		mapping (bytes32 => bool[]) scored;
 	}
 
@@ -69,11 +79,26 @@ library MechanismLib {
 		d = self.initiationTime;
 	}
 
+	function getBinaryPreds(M storage self, address participant, uint[] taskIndices) internal returns (uint[]) {
+		uint[] memory preds = new uint[](taskIndices.length);
+		for (uint i = 0; i < taskIndices.length; i++) {
+			bytes32 taskId = self.taskIds[taskIndices[i]];
+			uint[] participantIndices = self.participantIndex[taskId];
+			for (uint j = 0; j < participantIndices.length; j++) {
+				if (self.participants[participantIndices[j]] == participant) {
+					preds[i] = self.binaryPreds[taskId][j];
+				}
+			}
+		}
+
+		return preds;
+	}
+
 	function getParticipantIndex(M storage self, bytes32 taskId, address participant) constant returns (uint) {
 		for (uint i = 0; i < self.participantIndex[taskId].length; i++) {
 			uint pInx = self.participantIndex[taskId][i];
 			if (self.participants[pInx] == participant) {
-				return i;
+				return pInx;
 			}
 		}
 
