@@ -1,4 +1,4 @@
-const DSMath = artifacts.require('./DSMath');
+const MathLib = artifacts.require('./Math');
 const MechanismLib = artifacts.require('./MechanismLib');
 const MechanismManager = artifacts.require('./MechanismManager');
 const RBTSMechanism = artifacts.require('./RBTSMechanism');
@@ -7,14 +7,14 @@ const TruecoinProtocol = artifacts.require('./TruecoinProtocol');
 
 module.exports = function(deployer) {
   // Libraries
-  deployer.deploy(DSMath);
+  deployer.deploy(MathLib);
   deployer.deploy(MechanismLib);
 
   // Linked mechanisms and libraries
-  deployer.link(DSMath, RBTSMechanism);
-  deployer.link(DSMath, EndogenousMechanism);
-  deployer.link(DSMath, MechanismManager);
-  deployer.link(DSMath, TruecoinProtocol);
+  deployer.link(MathLib, RBTSMechanism);
+  deployer.link(MathLib, EndogenousMechanism);
+  deployer.link(MathLib, MechanismManager);
+  deployer.link(MathLib, TruecoinProtocol);
   deployer.link(MechanismLib, RBTSMechanism);
   deployer.link(MechanismLib, EndogenousMechanism);
   deployer.link(MechanismLib, MechanismManager);

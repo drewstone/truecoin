@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import '../math/DSMath.sol';
+import '../math/Math.sol';
 import './MechanismLib.sol';
 
 contract RBTSMechanism {
@@ -42,23 +42,23 @@ contract RBTSMechanism {
 		uint128 x_i = mechanism.binaryPreds[taskId][i];
 		uint128 x_k = mechanism.binaryPreds[taskId][k];
 
-		uint128 delta = DSMath.wmin(y_j, DSMath.wsub(1 ether, y_j));
+		uint128 delta = Math.wmin(y_j, Math.wsub(1 ether, y_j));
 
 		if (x_i == 1) {
-			y_iPrime = DSMath.wadd(y_j, delta);
+			y_iPrime = Math.wadd(y_j, delta);
 		} else {
-			y_iPrime = DSMath.wsub(y_j, delta);
+			y_iPrime = Math.wsub(y_j, delta);
 		}
 
 		// User's utility is sum of information and prediction scores
-		return DSMath.wadd(RBTSQuadraticScoring(x_k, y_iPrime), RBTSQuadraticScoring(x_k, y_i));
+		return Math.wadd(RBTSQuadraticScoring(x_k, y_iPrime), RBTSQuadraticScoring(x_k, y_i));
 	}
 
 	function RBTSQuadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
 		if (i == 1) {
-			return uint128(DSMath.wsub(DSMath.wmul(2 * 1 ether, p), DSMath.wmul(p, p)));
+			return uint128(Math.wsub(Math.wmul(2 * 1 ether, p), Math.wmul(p, p)));
 		} else {
-			return uint128(DSMath.wsub(1 ether, DSMath.wmul(p, p)));
+			return uint128(Math.wsub(1 ether, Math.wmul(p, p)));
 		}
 	}
 

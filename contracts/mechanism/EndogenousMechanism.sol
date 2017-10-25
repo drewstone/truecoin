@@ -1,7 +1,6 @@
 pragma solidity ^0.4.10;
 
-import '../math/DSMath.sol';
-import '../math/ArrayMath.sol';
+import '../math/Math.sol';
 import './MechanismLib.sol';
 
 contract EndogenousMechanism {	
@@ -45,9 +44,29 @@ contract EndogenousMechanism {
 		uint[] memory participantDistinctBinaryPreds = mechanism.getBinaryPreds(participant, participantDistinctTasks);
 		uint[] memory referenceDistinctBinaryPreds = mechanism.getBinaryPreds(referenceAgent, referenceDistinctTasks);
 
-		uint128 scoreA = uint128(1 ether * (participantBinaryPred * referenceBinaryPred - (1 - participantBinaryPred) * (1 - referenceBinaryPred));
-		uint128 scoreB = uint128(1 ether * )
-		return 0;
+		uint128 scoreA = scoreAij(participantBinaryPred, referenceBinaryPred);
+		uint128 scoreB = scoreBij(participantDistinctBinaryPreds, referenceDistinctBinaryPreds);
+		return Math.wsub(scoreA, scoreB);
+		
+	}
+
+	function scoreAij(uint p, uint r) internal constant returns (uint128) {
+		require((p == 0 || p == 1) && (r == 0 || r == 1));
+		uint first = p * r;
+		uint second = (1 - p) * (1 - r);
+		uint score = 1 ether * (first + second);
+		return Math.cast(score);
+	}
+
+	function scoreBij(uint[] ps, uint[] rs) internal constant returns (uint128) {
+		require(ps.length == rs.length);
+
+		uint d = ps.length * 1 ether;
+		uint first = Math.wdiv(Math.sum(ps) * 1 ether, d);
+		uint second = Math.wdiv(Math.sum(rs) * 1 ether, d);
+		uint128 left = Math.wmul(first, second);
+		uint128 right = Math.wmul(Math.wsub(1 ether, first), Math.wsub(1 ether, second));
+		return Math.wadd(left, right);
 	}
 
 	function getNonOverlappingTasks(bytes32 taskId, address participant) internal returns (uint, uint[], uint[]) {
@@ -63,7 +82,7 @@ contract EndogenousMechanism {
 			if (mechanism.participants[participantIndices[j]] != participant) {
 				address referenceAgent = mechanism.participants[participantIndices[j]];
 				uint[] memory referenceAgTasks = mechanism.answeredTaskIndex[referenceAgent];
-				(participantDistinctTasks, referenceDistinctTasks) = ArrayMath.getDistinctElements(participantTasks, referenceAgTasks);
+				(participantDistinctTasks, referenceDistinctTasks) = Math.getDistinctElements(participantTasks, referenceAgTasks);
 
 				if (participantDistinctTasks.length > 0) {
 					referenceAgentIndex = participantIndices[j];
