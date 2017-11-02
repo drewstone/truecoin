@@ -64,16 +64,16 @@ contract MechanismManager {
 		return true;
 	}
 
-	function score(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, address participant) returns (uint128) {
+	function score(address designer, uint8 mechanismId, bytes32 name, address participant) returns (uint128) {
 		require(mechanismIndex[designer] > 0);
 		MechanismWrapper w = mechanismWrappers[mechanismIndex[designer]];
 
 		if (mechanismId == 1) {
 			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
-			return r.score(taskId, participant);
+			return r.score(participant);
 		} else if (mechanismId == 2) {
 			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
-			return e.score(taskId, participant);
+			return e.score(participant);
 		} else if (mechanismId == 3) {
 
 		} else if (mechanismId == 4) {

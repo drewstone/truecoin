@@ -31,8 +31,8 @@ contract TruecoinProtocol {
 		return m.submit(manager, mechanismId, name, taskId, i, p, msg.sender);
 	}
 
-	function claimScore(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId) returns (bool) {
-		uint128 score = m.score(manager, mechanismId, name, taskId, msg.sender);
+	function claimScore(address manager, uint8 mechanismId, bytes32 name) returns (bool) {
+		uint128 score = m.score(manager, mechanismId, name, msg.sender);
 		Score(manager, msg.sender, name, score);
 	}
 

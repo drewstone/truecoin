@@ -42,7 +42,7 @@ contract EndogenousMechanism {
 		uint referenceBinaryPred;
 
 		// Get binary predictions based on array index in task's participants
-		for (uint i = 0; i < mechanism.participantIndex[taskId]; i++) {
+		for (uint i = 0; i < mechanism.participantIndex[taskId].length; i++) {
 			if (mechanism.participantIndex[taskId][i] == referenceAgentIndex) {
 				referenceBinaryPred = mechanism.binaryPreds[taskId][i];
 			} else if (mechanism.participantIndex[taskId][i] == participantAgentIndex) {
@@ -53,26 +53,27 @@ contract EndogenousMechanism {
 		uint[] memory participantDistinctBinaryPreds = mechanism.getBinaryPreds(participant, participantDistinctTasks);
 		uint[] memory referenceDistinctBinaryPreds = mechanism.getBinaryPreds(referenceAgent, referenceDistinctTasks);
 
-		uint128 scoreA = scoreAij(participantBinaryPred, referenceBinaryPred);
-		uint128 scoreB = scoreBij(participantDistinctBinaryPreds, referenceDistinctBinaryPreds);
-		return MathLib.wsub(scoreA, scoreB);
+		return MathLib.wsub(
+			scoreAij(participantBinaryPred, referenceBinaryPred),
+			scoreBij(participantDistinctBinaryPreds, referenceDistinctBinaryPreds)
+		);
 		
 	}
 
 	function scoreAij(uint p, uint r) internal constant returns (uint128) {
 		require((p == 0 || p == 1) && (r == 0 || r == 1));
-		uint first = p * r;
-		uint second = (1 - p) * (1 - r);
-		uint score = 1 ether * (first + second);
-		return MathLib.cast(score);
+		uint128 first = MathLib.cast(p * r);
+		uint128 second = MathLib.cast((1 - p) * (1 - r));
+		uint128 score = 1 ether * (first + second);
+		return score;
 	}
 
 	function scoreBij(uint[] ps, uint[] rs) internal constant returns (uint128) {
 		require(ps.length == rs.length);
 
-		uint d = ps.length * 1 ether;
-		uint first = MathLib.wdiv(MathLib.sum(ps) * 1 ether, d);
-		uint second = MathLib.wdiv(MathLib.sum(rs) * 1 ether, d);
+		uint128 d = MathLib.cast(ps.length * 1 ether);
+		uint128 first = MathLib.wdiv(MathLib.cast(MathLib.sum(ps)) * 1 ether, d);
+		uint128 second = MathLib.wdiv(MathLib.cast(MathLib.sum(rs)) * 1 ether, d);
 		uint128 left = MathLib.wmul(first, second);
 		uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
 		return MathLib.wadd(left, right);
