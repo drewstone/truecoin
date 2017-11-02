@@ -198,20 +198,20 @@ library MathLib {
 			}
 		}
 
-		uint min = DSMath.min(a.length, b.length) - dups;
-		uint[] memory aDistinct = new uint[](min);
-		uint[] memory bDistinct = new uint[](min);
+		uint delta = min(a.length, b.length) - dups;
+		uint[] memory aDistinct = new uint[](delta);
+		uint[] memory bDistinct = new uint[](delta);
 		uint counter = 0;
 
 		for (i = 0; i < a.length; i++) {
-			if (!aDup[i] && counter != min) {
+			if (!aDup[i] && counter != delta) {
 				aDistinct[counter++] = a[i];
 			}
 		}
 		
 		counter = 0;
 		for (i = 0; i < b.length; i++) {
-			if (!bDup[i] && counter != min) {
+			if (!bDup[i] && counter != delta) {
 				bDistinct[counter++] = b[i];
 			}
 		}

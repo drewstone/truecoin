@@ -1,4 +1,4 @@
-const MathLib = artifacts.require('./Math');
+const MathLib = artifacts.require('./MathLib');
 const MechanismLib = artifacts.require('./MechanismLib');
 const MechanismManager = artifacts.require('./MechanismManager');
 const RBTSMechanism = artifacts.require('./RBTSMechanism');

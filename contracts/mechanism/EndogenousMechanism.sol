@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import '../math/Math.sol';
+import '../math/MathLib.sol';
 import './MechanismLib.sol';
 
 contract EndogenousMechanism {	
@@ -21,12 +21,21 @@ contract EndogenousMechanism {
 		mechanism.submit(taskId, signal, posterior, participant);
 	}
 
+	function score(address participant) returns (uint128) {
+		return 0;
+	}
+
 	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
+		uint participantAgentIndex = mechanism.getParticipantIndex(taskId, participant);
+		require(participantAgentIndex != 999999999);
+		require(!mechanism.scored[taskId][participantAgentIndex]);
+		mechanism.scored[taskId][participantAgentIndex] = true;
+
 		uint referenceAgentIndex;
 		uint[] memory participantDistinctTasks;
 		uint[] memory referenceDistinctTasks;
+
 		(referenceAgentIndex, participantDistinctTasks, referenceDistinctTasks) = getNonOverlappingTasks(taskId, participant);
-		participantAgentIndex = mechanism.getParticipantIndex(taskId, participant);
 		address referenceAgent = mechanism.participants[referenceAgentIndex];
 
 		uint participantBinaryPred;
@@ -36,7 +45,7 @@ contract EndogenousMechanism {
 		for (uint i = 0; i < mechanism.participantIndex[taskId]; i++) {
 			if (mechanism.participantIndex[taskId][i] == referenceAgentIndex) {
 				referenceBinaryPred = mechanism.binaryPreds[taskId][i];
-			} else if (mechanism.participantIndex[taskid][i] == participantAgentIndex) {
+			} else if (mechanism.participantIndex[taskId][i] == participantAgentIndex) {
 				participantBinaryPred = mechanism.binaryPreds[taskId][i];
 			}
 		}
@@ -46,7 +55,7 @@ contract EndogenousMechanism {
 
 		uint128 scoreA = scoreAij(participantBinaryPred, referenceBinaryPred);
 		uint128 scoreB = scoreBij(participantDistinctBinaryPreds, referenceDistinctBinaryPreds);
-		return Math.wsub(scoreA, scoreB);
+		return MathLib.wsub(scoreA, scoreB);
 		
 	}
 
@@ -55,18 +64,18 @@ contract EndogenousMechanism {
 		uint first = p * r;
 		uint second = (1 - p) * (1 - r);
 		uint score = 1 ether * (first + second);
-		return Math.cast(score);
+		return MathLib.cast(score);
 	}
 
 	function scoreBij(uint[] ps, uint[] rs) internal constant returns (uint128) {
 		require(ps.length == rs.length);
 
 		uint d = ps.length * 1 ether;
-		uint first = Math.wdiv(Math.sum(ps) * 1 ether, d);
-		uint second = Math.wdiv(Math.sum(rs) * 1 ether, d);
-		uint128 left = Math.wmul(first, second);
-		uint128 right = Math.wmul(Math.wsub(1 ether, first), Math.wsub(1 ether, second));
-		return Math.wadd(left, right);
+		uint first = MathLib.wdiv(MathLib.sum(ps) * 1 ether, d);
+		uint second = MathLib.wdiv(MathLib.sum(rs) * 1 ether, d);
+		uint128 left = MathLib.wmul(first, second);
+		uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
+		return MathLib.wadd(left, right);
 	}
 
 	function getNonOverlappingTasks(bytes32 taskId, address participant) internal returns (uint, uint[], uint[]) {
@@ -82,7 +91,7 @@ contract EndogenousMechanism {
 			if (mechanism.participants[participantIndices[j]] != participant) {
 				address referenceAgent = mechanism.participants[participantIndices[j]];
 				uint[] memory referenceAgTasks = mechanism.answeredTaskIndex[referenceAgent];
-				(participantDistinctTasks, referenceDistinctTasks) = Math.getDistinctElements(participantTasks, referenceAgTasks);
+				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(participantTasks, referenceAgTasks);
 
 				if (participantDistinctTasks.length > 0) {
 					referenceAgentIndex = participantIndices[j];
