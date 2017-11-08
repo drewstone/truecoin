@@ -22,14 +22,24 @@ contract EndogenousMechanism {
 	}
 
 	function score(address participant) returns (uint128) {
-		return 0;
+		uint[] memory taskIds = mechanism.answeredTaskIndex[participant];
+		uint128 score;
+		for (uint i = 0; i < taskIds.length; i++) {
+			score = MathLib.wadd(score, scoreTask(mechanism.taskIds[taskIds[i]], participant));
+		}
+		
+		return score;
 	}
 
 	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
-		uint participantAgentIndex = mechanism.getParticipantIndex(taskId, participant);
-		require(participantAgentIndex != 999999999);
-		require(!mechanism.scored[taskId][participantAgentIndex]);
-		mechanism.scored[taskId][participantAgentIndex] = true;
+		require(mechanism.participantIndex[participant] != 0);
+
+		// Return no payment if task was previously scored
+		if (mechanism.scored[taskId][mechanism.participantIndex[participant]]) {
+			return 0;
+		}
+
+		mechanism.scored[taskId][mechanism.participantIndex[participant]] = true;
 
 		uint referenceAgentIndex;
 		uint[] memory participantDistinctTasks;
@@ -38,20 +48,12 @@ contract EndogenousMechanism {
 		(referenceAgentIndex, participantDistinctTasks, referenceDistinctTasks) = getNonOverlappingTasks(taskId, participant);
 		address referenceAgent = mechanism.participants[referenceAgentIndex];
 
-		uint participantBinaryPred;
-		uint referenceBinaryPred;
-
 		// Get binary predictions based on array index in task's participants
-		for (uint i = 0; i < mechanism.participantIndex[taskId].length; i++) {
-			if (mechanism.participantIndex[taskId][i] == referenceAgentIndex) {
-				referenceBinaryPred = mechanism.binaryPreds[taskId][i];
-			} else if (mechanism.participantIndex[taskId][i] == participantAgentIndex) {
-				participantBinaryPred = mechanism.binaryPreds[taskId][i];
-			}
-		}
+		uint128 participantBinaryPred = mechanism.getBinaryPred(participant, mechanism.taskIndex[taskId]);
+		uint128 referenceBinaryPred = mechanism.getBinaryPred(referenceAgent, mechanism.taskIndex[taskId]);
 
-		uint[] memory participantDistinctBinaryPreds = mechanism.getBinaryPreds(participant, participantDistinctTasks);
-		uint[] memory referenceDistinctBinaryPreds = mechanism.getBinaryPreds(referenceAgent, referenceDistinctTasks);
+		uint128[] memory participantDistinctBinaryPreds = mechanism.getBinaryPreds(participant, participantDistinctTasks);
+		uint128[] memory referenceDistinctBinaryPreds = mechanism.getBinaryPreds(referenceAgent, referenceDistinctTasks);
 
 		return MathLib.wsub(
 			scoreAij(participantBinaryPred, referenceBinaryPred),
@@ -68,7 +70,7 @@ contract EndogenousMechanism {
 		return score;
 	}
 
-	function scoreBij(uint[] ps, uint[] rs) internal constant returns (uint128) {
+	function scoreBij(uint128[] ps, uint128[] rs) internal constant returns (uint128) {
 		require(ps.length == rs.length);
 
 		uint128 d = MathLib.cast(ps.length * 1 ether);
@@ -80,28 +82,27 @@ contract EndogenousMechanism {
 	}
 
 	function getNonOverlappingTasks(bytes32 taskId, address participant) internal returns (uint, uint[], uint[]) {
-		uint[] memory participantIndices = mechanism.participantIndex[taskId];
-		uint[] memory participantTasks = mechanism.answeredTaskIndex[participant];
+		uint[] memory taskParticipants = mechanism.taskParticipants[taskId];
+		uint[] memory answeredTasks = mechanism.answeredTaskIndex[participant];
 
 		uint referenceAgentIndex;
 		uint[] memory participantDistinctTasks;
 		uint[] memory referenceDistinctTasks;
 
 		// Iterate over participants that have answered the same task and get non-overlapping tasks
-		for (uint j = 0; j < participantIndices.length; j++) {
-			if (mechanism.participants[participantIndices[j]] != participant) {
-				address referenceAgent = mechanism.participants[participantIndices[j]];
+		for (uint j = 0; j < taskParticipants.length; j++) {
+			if (mechanism.participants[taskParticipants[j]] != participant) {
+				address referenceAgent = mechanism.participants[taskParticipants[j]];
 				uint[] memory referenceAgTasks = mechanism.answeredTaskIndex[referenceAgent];
-				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(participantTasks, referenceAgTasks);
+				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(answeredTasks, referenceAgTasks);
 
 				if (participantDistinctTasks.length > 0) {
-					referenceAgentIndex = participantIndices[j];
+					referenceAgentIndex = taskParticipants[j];
 					break;
 				}
 			}
 		}
 
-		require(participantDistinctTasks.length > 0);
 		return (referenceAgentIndex, participantDistinctTasks, referenceDistinctTasks);
 	}
 

@@ -166,7 +166,7 @@ library MathLib {
 		assert((z = uint128(x)) == x);
 	}
 
-	function sum(uint[] a) internal constant returns (uint sum) {
+	function sum(uint128[] a) internal constant returns (uint sum) {
 		for (uint i = 0; i < a.length; i++) {
 			sum = add(sum, a[i]); 
 		}

@@ -21,30 +21,42 @@ contract RBTSMechanism {
 	}
 
 	function score(address participant) returns (uint128) {
-		return 0;
+		uint[] memory taskIds = mechanism.answeredTaskIndex[participant];
+		uint128 score;
+		for (uint i = 0; i < taskIds.length; i++) {
+			score = MathLib.wadd(score, scoreTask(mechanism.taskIds[taskIds[i]], participant));
+		}
+		
+		return score;
 	}
 
 	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
-		require(mechanism.participantIndex[taskId].length >= 3);
+		require(mechanism.taskParticipants[taskId].length >= 3);
 
 		// Reference agent index j, peer agent index k
-		uint i = mechanism.getParticipantIndex(taskId, participant);
-		require(i != 999999999);
+		require(mechanism.participantIndex[participant] != 0);
 
-		require(!mechanism.scored[taskId][i]);
-		mechanism.scored[taskId][i] = true;
+		// require(!mechanism.scored[taskId][i]);
+		mechanism.scored[taskId][mechanism.participantIndex[participant]] = true;
 
-		uint128 j = uint128((i+1) % mechanism.participants.length);
-		uint128 k = uint128((i+2) % mechanism.participants.length);
+		uint128 j = uint128((mechanism.participantIndex[participant]+1) % mechanism.participants.length);
+		if (j == 0) {
+			j = 1;
+		}
+
+		uint128 k = uint128((mechanism.participantIndex[participant]+2) % mechanism.participants.length);
+		if (k == 0) {
+			k = 1;
+		}
 
 		// User and reference agent's meta predictions (underlying distribution)
-		uint128 y_i = mechanism.metaPreds[taskId][i];
-		uint128 y_j = mechanism.metaPreds[taskId][j];
+		uint128 y_i = mechanism.getMetaPred(participant, mechanism.taskIndex[taskId]);
+		uint128 y_j = mechanism.getMetaPred(mechanism.participants[j], mechanism.taskIndex[taskId]);
 		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
-		uint128 x_i = mechanism.binaryPreds[taskId][i];
-		uint128 x_k = mechanism.binaryPreds[taskId][k];
+		uint128 x_i = mechanism.getBinaryPred(participant, mechanism.taskIndex[taskId]);
+		uint128 x_k = mechanism.getBinaryPred(mechanism.participants[k], mechanism.taskIndex[taskId]);
 
 		uint128 delta = MathLib.wmin(y_j, MathLib.wsub(1 ether, y_j));
 
@@ -60,9 +72,9 @@ contract RBTSMechanism {
 
 	function RBTSQuadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
 		if (i == 1) {
-			return uint128(MathLib.wsub(MathLib.wmul(2 * 1 ether, p), MathLib.wmul(p, p)));
+			return MathLib.wsub(MathLib.wmul(2 * 1 ether, p), MathLib.wmul(p, p));
 		} else {
-			return uint128(MathLib.wsub(1 ether, MathLib.wmul(p, p)));
+			return MathLib.wsub(1 ether, MathLib.wmul(p, p));
 		}
 	}
 
