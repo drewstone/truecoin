@@ -1,14 +1,14 @@
 pragma solidity ^0.4.10;
 
 import '../mechanism/RBTSMechanism.sol';
-import '../mechanism/EndogenousMechanism.sol';
+// import '../mechanism/EndogenousMechanism.sol';
 
 contract MechanismManager {
 	address public protocol;
 
 	struct MechanismWrapper {
 		mapping (bytes32 => address) RBTSIndex;
-		mapping (bytes32 => address) ENDGIndex;
+		// mapping (bytes32 => address) ENDGIndex;
 	}
 
 	MechanismWrapper[] mechanismWrappers;
@@ -30,8 +30,8 @@ contract MechanismManager {
 			RBTSMechanism r = new RBTSMechanism(designer, events, taskIds);
 			w.RBTSIndex[name] = r;
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = new EndogenousMechanism(designer, events, taskIds);
-			w.ENDGIndex[name] = e;
+			// EndogenousMechanism e = new EndogenousMechanism(designer, events, taskIds);
+			// w.ENDGIndex[name] = e;
 		} else {
 			return false;
 		}
@@ -47,8 +47,8 @@ contract MechanismManager {
 			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
 			r.submit(taskId, signal, posterior, participant);
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
-			e.submit(taskId, signal, posterior, participant);
+			// EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
+			// e.submit(taskId, signal, posterior, participant);
 		} else if (mechanismId == 3) {
 
 		} else if (mechanismId == 4) {
@@ -72,8 +72,8 @@ contract MechanismManager {
 			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
 			return r.score(participant);
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
-			return e.score(participant);
+			// EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
+			// return e.score(participant);
 		} else if (mechanismId == 3) {
 
 		} else if (mechanismId == 4) {
@@ -95,8 +95,8 @@ contract MechanismManager {
 			RBTSMechanism r = RBTSMechanism(w.RBTSIndex[name]);
 			return r.scoreTask(taskId, participant);
 		} else if (mechanismId == 2) {
-			EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
-			return e.scoreTask(taskId, participant);
+			// EndogenousMechanism e = EndogenousMechanism(w.ENDGIndex[name]);
+			// return e.scoreTask(taskId, participant);
 		} else if (mechanismId == 3) {
 
 		} else if (mechanismId == 4) {
@@ -117,7 +117,7 @@ contract MechanismManager {
 		if (mechanismId == 1) {
 			return w.RBTSIndex[name];
 		} else if (mechanismId == 2) {
-			return w.ENDGIndex[name];
+			// return w.ENDGIndex[name];
 		} else if (mechanismId == 3) {
 
 		} else if (mechanismId == 4) {

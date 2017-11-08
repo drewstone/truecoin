@@ -45,19 +45,30 @@ contract EndogenousMechanism {
 		uint[] memory participantDistinctTasks;
 		uint[] memory referenceDistinctTasks;
 
-		(referenceAgentIndex, participantDistinctTasks, referenceDistinctTasks) = getNonOverlappingTasks(taskId, participant);
-		address referenceAgent = mechanism.participants[referenceAgentIndex];
+		// Iterate over participants that have answered the same task and get non-overlapping tasks
+		for (uint i = 0; i < mechanism.taskParticipants[taskId].length; i++) {
+			if (mechanism.participants[mechanism.taskParticipants[taskId][i]] != participant) {
+				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(
+					mechanism.answeredTaskIndex[participant],
+					mechanism.answeredTaskIndex[mechanism.participants[mechanism.taskParticipants[taskId][i]]]
+				);
 
-		// Get binary predictions based on array index in task's participants
-		uint128 participantBinaryPred = mechanism.getBinaryPred(participant, mechanism.taskIndex[taskId]);
-		uint128 referenceBinaryPred = mechanism.getBinaryPred(referenceAgent, mechanism.taskIndex[taskId]);
-
-		uint128[] memory participantDistinctBinaryPreds = mechanism.getBinaryPreds(participant, participantDistinctTasks);
-		uint128[] memory referenceDistinctBinaryPreds = mechanism.getBinaryPreds(referenceAgent, referenceDistinctTasks);
+				if (participantDistinctTasks.length > 0) {
+					referenceAgentIndex = mechanism.taskParticipants[taskId][i];
+					break;
+				}
+			}
+		}
 
 		return MathLib.wsub(
-			scoreAij(participantBinaryPred, referenceBinaryPred),
-			scoreBij(participantDistinctBinaryPreds, referenceDistinctBinaryPreds)
+			scoreAij(
+				mechanism.getBinaryPred(participant, mechanism.taskIndex[taskId]),
+				mechanism.getBinaryPred(mechanism.participants[referenceAgentIndex], mechanism.taskIndex[taskId])
+			),
+			scoreBij(
+				mechanism.getBinaryPreds(participant, participantDistinctTasks),
+				mechanism.getBinaryPreds(mechanism.participants[referenceAgentIndex], referenceDistinctTasks)
+			)
 		);
 		
 	}
@@ -79,31 +90,6 @@ contract EndogenousMechanism {
 		uint128 left = MathLib.wmul(first, second);
 		uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
 		return MathLib.wadd(left, right);
-	}
-
-	function getNonOverlappingTasks(bytes32 taskId, address participant) internal returns (uint, uint[], uint[]) {
-		uint[] memory taskParticipants = mechanism.taskParticipants[taskId];
-		uint[] memory answeredTasks = mechanism.answeredTaskIndex[participant];
-
-		uint referenceAgentIndex;
-		uint[] memory participantDistinctTasks;
-		uint[] memory referenceDistinctTasks;
-
-		// Iterate over participants that have answered the same task and get non-overlapping tasks
-		for (uint j = 0; j < taskParticipants.length; j++) {
-			if (mechanism.participants[taskParticipants[j]] != participant) {
-				address referenceAgent = mechanism.participants[taskParticipants[j]];
-				uint[] memory referenceAgTasks = mechanism.answeredTaskIndex[referenceAgent];
-				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(answeredTasks, referenceAgTasks);
-
-				if (participantDistinctTasks.length > 0) {
-					referenceAgentIndex = taskParticipants[j];
-					break;
-				}
-			}
-		}
-
-		return (referenceAgentIndex, participantDistinctTasks, referenceDistinctTasks);
 	}
 
 	function info() returns (address[], bytes32[], uint8[], uint256) {
