@@ -6,6 +6,7 @@ import './MechanismManager.sol';
  * This contract handles the Truecoin protocol
  */
 contract TruecoinProtocol {
+	address public owner;
 	address public m;
 
 	event Initialized(address mechanismManager);
@@ -14,11 +15,16 @@ contract TruecoinProtocol {
 	event Score(address manager, address participant, bytes32 name, uint128 score);
 
 	function TruecoinProtocol() {
+		owner = msg.sender;
 	}
 
-	function initProtocol(address mechanismManager) {
+	function initProtocol(address mechanismManager) isOwner {
 		m = mechanismManager;
 		Initialized(m);
+	}
+
+	function destroyOwner() isOwner {
+		owner = address(0x0);
 	}
 
 	function setNewMechanism(uint8 mechanismId, bytes32 name, address mechContract) returns (bool) {
@@ -48,4 +54,10 @@ contract TruecoinProtocol {
 	function getMechanism(address manager, uint8 mechanismId, bytes32 name) constant returns (address) {
 		return MechanismManager(m).get(manager, mechanismId, name);
 	}
+
+	modifier isOwner() { 
+		require(msg.sender == owner);
+		_; 
+	}
+	
 }

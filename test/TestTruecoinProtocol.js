@@ -19,6 +19,13 @@ contract('TruecoinProtocol', (accounts) => {
     assert.equal(result.logs[0].event, 'Initialized');
   });
 
+  it('should fail to reinitialize after destroying owner', async function() {
+    const m = await MechanismManager.new(protocol.address);
+    await protocol.initProtocol(m.address);
+    await protocol.destroyOwner();
+    TestHelper.expectThrow(protocol.initProtocol(m.address));
+  });
+
   it('should set a new RBTS mechanism', async function() {
     const mechanismDesigner = accounts[0];
     const mechanismId = 1;
