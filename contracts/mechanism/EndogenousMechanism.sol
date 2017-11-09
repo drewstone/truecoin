@@ -1,60 +1,53 @@
 pragma solidity ^0.4.10;
 
 import '../math/MathLib.sol';
-import './MechanismLib.sol';
+import './Mechanism.sol';
 
-contract EndogenousMechanism {	
-	using MechanismLib for MechanismLib.M;
-	MechanismLib.M mechanism;
-	
+contract EndogenousMechanism is Mechanism {	
 	address public manager;
 	address public designer;
 	mapping (bytes32 => uint) participantCount;
 
-	function EndogenousMechanism(address mechanismDesigner, uint8[] events, bytes32[] taskIds) {
-		manager = msg.sender;
-		designer = mechanismDesigner;
-		mechanism.init(events, taskIds);
+	function EndogenousMechanism(uint8[] events, bytes32[] taskIds) {
+		designer = msg.sender;
+		_init(events, taskIds);
 	}
 
 	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {
-		mechanism.submit(taskId, signal, posterior, participant);
+		_submit(taskId, signal, posterior, participant);
 	}
 
-	function score(address participant) returns (uint128) {
-		uint[] memory taskIds = mechanism.answeredTaskIndex[participant];
-		uint128 score;
-		for (uint i = 0; i < taskIds.length; i++) {
-			score = MathLib.wadd(score, scoreTask(mechanism.taskIds[taskIds[i]], participant));
+	function score(address participant) returns (uint128 score) {
+		uint[] memory tIds = answeredTaskIndex[participant];
+		for (uint i = 0; i < tIds.length; i++) {
+			score = MathLib.wadd(score, scoreTask(taskIds[tIds[i]], participant));
 		}
-		
-		return score;
 	}
 
 	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
-		require(mechanism.participantIndex[participant] != 0);
+		require(participantIndex[participant] != 0);
 
 		// Return no payment if task was previously scored
-		if (mechanism.scored[taskId][mechanism.participantIndex[participant]]) {
+		if (scored[taskId][participantIndex[participant]]) {
 			return 0;
 		}
 
-		mechanism.scored[taskId][mechanism.participantIndex[participant]] = true;
+		scored[taskId][participantIndex[participant]] = true;
 
 		uint referenceAgentIndex;
 		uint[] memory participantDistinctTasks;
 		uint[] memory referenceDistinctTasks;
 
 		// Iterate over participants that have answered the same task and get non-overlapping tasks
-		for (uint i = 0; i < mechanism.taskParticipants[taskId].length; i++) {
-			if (mechanism.participants[mechanism.taskParticipants[taskId][i]] != participant) {
+		for (uint i = 0; i < taskParticipants[taskId].length; i++) {
+			if (participants[taskParticipants[taskId][i]] != participant) {
 				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(
-					mechanism.answeredTaskIndex[participant],
-					mechanism.answeredTaskIndex[mechanism.participants[mechanism.taskParticipants[taskId][i]]]
+					answeredTaskIndex[participant],
+					answeredTaskIndex[participants[taskParticipants[taskId][i]]]
 				);
 
 				if (participantDistinctTasks.length > 0) {
-					referenceAgentIndex = mechanism.taskParticipants[taskId][i];
+					referenceAgentIndex = taskParticipants[taskId][i];
 					break;
 				}
 			}
@@ -62,12 +55,12 @@ contract EndogenousMechanism {
 
 		return MathLib.wsub(
 			scoreAij(
-				mechanism.getBinaryPred(participant, mechanism.taskIndex[taskId]),
-				mechanism.getBinaryPred(mechanism.participants[referenceAgentIndex], mechanism.taskIndex[taskId])
+				getBinaryPred(participant, taskIndex[taskId]),
+				getBinaryPred(participants[referenceAgentIndex], taskIndex[taskId])
 			),
 			scoreBij(
-				mechanism.getBinaryPreds(participant, participantDistinctTasks),
-				mechanism.getBinaryPreds(mechanism.participants[referenceAgentIndex], referenceDistinctTasks)
+				getBinaryPreds(participant, participantDistinctTasks),
+				getBinaryPreds(participants[referenceAgentIndex], referenceDistinctTasks)
 			)
 		);
 		
@@ -93,6 +86,6 @@ contract EndogenousMechanism {
 	}
 
 	function info() returns (address[], bytes32[], uint8[], uint256) {
-		return mechanism.info();
+		return _info();
 	}
 }

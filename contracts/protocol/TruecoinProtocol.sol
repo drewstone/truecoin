@@ -6,38 +6,38 @@ import './MechanismManager.sol';
  * This contract handles the Truecoin protocol
  */
 contract TruecoinProtocol {
-	MechanismManager public m;
+	address public m;
 
 	event Initialized(address mechanismManager);
-	event Creation(address manager, uint8 mechanismId, bytes32 name, bytes32[] taskIds);
+	event Setting(address manager, uint8 mechanismId, bytes32 name, address mechContract);
 	event Submission(address manager, address participant, bytes32 taskId, uint128[2] preds);
 	event Score(address manager, address participant, bytes32 name, uint128 score);
 
 	function TruecoinProtocol() {
 	}
 
-	function initProtocol() {
-		m = new MechanismManager();
+	function initProtocol(address mechanismManager) {
+		m = mechanismManager;
 		Initialized(m);
 	}
 
-	function createNewMechanism(uint8 mechanismId, uint8[] events, bytes32 name, bytes32[] taskIds) returns (bool) {
-		Creation(msg.sender, mechanismId, name, taskIds);
-		return m.create(msg.sender, mechanismId, events, name, taskIds);
+	function setNewMechanism(uint8 mechanismId, bytes32 name, address mechContract) returns (bool) {
+		Setting(msg.sender, mechanismId, name, mechContract);
+		return MechanismManager(m).set(msg.sender, mechanismId, name, mechContract);
 	}
 
 	function submitPrediction(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 i, uint128 p) returns (bool) {
 		Submission(manager, msg.sender, taskId, [i,p]);
-		return m.submit(manager, mechanismId, name, taskId, i, p, msg.sender);
+		return MechanismManager(m).submit(manager, mechanismId, name, taskId, i, p, msg.sender);
 	}
 
-	// function claimScore(address manager, uint8 mechanismId, bytes32 name) returns (bool) {
-	// 	uint128 score = m.score(manager, mechanismId, name, msg.sender);
-	// 	Score(manager, msg.sender, name, score);
-	// }
+	function claimScore(address manager, uint8 mechanismId, bytes32 name) returns (bool) {
+		uint128 score = MechanismManager(m).score(manager, mechanismId, name, msg.sender);
+		Score(manager, msg.sender, name, score);
+	}
 
 	function claimScoreByTask(address manager, uint8 mechanismId, bytes32 taskId, bytes32 name) returns (uint128) {
-		uint128 score = m.scoreTask(manager, mechanismId, taskId, name, msg.sender);
+		uint128 score = MechanismManager(m).scoreTask(manager, mechanismId, taskId, name, msg.sender);
 		Score(manager, msg.sender, name, score);
 	}
 
@@ -46,6 +46,6 @@ contract TruecoinProtocol {
 	}
 
 	function getMechanism(address manager, uint8 mechanismId, bytes32 name) constant returns (address) {
-		return m.get(manager, mechanismId, name);
+		return MechanismManager(m).get(manager, mechanismId, name);
 	}
 }
