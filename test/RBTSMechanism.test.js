@@ -52,7 +52,24 @@ contract('RBTSMechanism', (accounts) => {
     assert.equal(result.logs[0].args.participant.toString(), accounts[3]);
   });
 
-  it('should submit votes to a task in an RBTS mechanism', async function() {
+  it('should score votes to a task in an RBTS mechanism', async function() {
+    const mechanismDesigner = accounts[0];
+    const mechanismId = 1;
+    const mechanismName = 'Test Mechanism';
+    const events = [0,1];
+    const tasks = ['task1'];
+    const posterior = web3.toWei(1, 'ether');
+
+    const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
+    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[1] });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[2] });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[3] });
+    let result = await protocol.claimScoreByTask(mechanismDesigner, mechanismId, mechanismName, tasks[0], { from: accounts[1] });
+    assert.ok(result.logs[0].args.score.toNumber(), web3.toWei(2, 'ether'));
+  });
+
+  it('should submit votes to a task in an RBTS mechanism using general score function', async function() {
     const mechanismDesigner = accounts[0];
     const mechanismId = 1;
     const mechanismName = 'Test Mechanism';
@@ -66,7 +83,7 @@ contract('RBTSMechanism', (accounts) => {
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[1] });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[2] });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[3] });
-    let result = await protocol.claimScoreByTask(mechanismDesigner, mechanismId, mechanismName, tasks[0], { from: accounts[1] });
+    let result = await protocol.claimScore(mechanismDesigner, mechanismId, mechanismName, { from: accounts[1] });
     assert.ok(result.logs[0].args.score.toNumber(), web3.toWei(2, 'ether'));
   });
 });

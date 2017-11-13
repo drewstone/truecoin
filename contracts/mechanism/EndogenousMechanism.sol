@@ -18,9 +18,8 @@ contract EndogenousMechanism is Mechanism {
 	}
 
 	function score(address participant) returns (uint128 score) {
-		uint[] memory tIds = answeredTaskIndex[participant];
-		for (uint i = 0; i < tIds.length; i++) {
-			score = MathLib.wadd(score, scoreTask(taskIds[tIds[i]], participant));
+		for (uint i = 0; i < answeredTaskIndex[participant].length; i++) {
+			score = MathLib.wadd(score, scoreTask(taskIds[answeredTaskIndex[participant][i] - 1], participant));
 		}
 	}
 

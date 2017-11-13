@@ -13,14 +13,10 @@ contract RBTSMechanism is Mechanism {
 		_submit(taskId, signal, posterior, participant);
 	}
 
-	function score(address participant) returns (uint128) {
-		uint[] memory tIds = answeredTaskIndex[participant];
-		uint128 score;
-		for (uint i = 0; i < tIds.length; i++) {
-			score = MathLib.wadd(score, scoreTask(taskIds[tIds[i]], participant));
+	function score(address participant) returns (uint128 score) {
+		for (uint i = 0; i < answeredTaskIndex[participant].length; i++) {
+			score = MathLib.wadd(score, scoreTask(taskIds[answeredTaskIndex[participant][i] - 1], participant));
 		}
-		
-		return score;
 	}
 
 	function scoreTask(bytes32 task, address participant) returns (uint128) {

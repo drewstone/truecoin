@@ -37,7 +37,7 @@ contract TruecoinProtocol {
 		Submission(manager, msg.sender, taskId, [signal, posterior]);
 	}
 
-	function claimScore(address manager, uint8 mechanismId, bytes32 name) returns (bool) {
+	function claimScore(address manager, uint8 mechanismId, bytes32 name) {
 		uint128 score = MechanismManager(m).score(manager, mechanismId, name, msg.sender);
 		Score(manager, msg.sender, name, score);
 	}
