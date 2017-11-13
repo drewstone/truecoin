@@ -1,50 +1,55 @@
 pragma solidity ^0.4.10;
 
 import '../math/MathLib.sol';
-import './MechanismLib.sol';
+import './Mechanism.sol';
 
-contract RBTSMechanism {
-	using MechanismLib for MechanismLib.M;
-	MechanismLib.M mechanism;
-	
-	address public manager;
-	address public designer;
-
-	function RBTSMechanism(address mechanismDesigner, uint8[] events, bytes32[] taskIds) {
-		manager = msg.sender;
-		designer = mechanismDesigner;
-		mechanism.init(events, taskIds);
+contract RBTSMechanism is Mechanism {
+	function RBTSMechanism(uint8[] events, bytes32[] taskIds) {
+		designer = msg.sender;
+		_init(events, taskIds);
 	}
 
 	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {
-		mechanism.submit(taskId, signal, posterior, participant);
+		_submit(taskId, signal, posterior, participant);
 	}
 
 	function score(address participant) returns (uint128) {
-		return 0;
+		uint[] memory tIds = answeredTaskIndex[participant];
+		uint128 score;
+		for (uint i = 0; i < tIds.length; i++) {
+			score = MathLib.wadd(score, scoreTask(taskIds[tIds[i]], participant));
+		}
+		
+		return score;
 	}
 
-	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
-		require(mechanism.participantIndex[taskId].length >= 3);
+	function scoreTask(bytes32 task, address participant) returns (uint128) {
+		require(taskParticipants[task].length >= 3);
 
 		// Reference agent index j, peer agent index k
-		uint i = mechanism.getParticipantIndex(taskId, participant);
-		require(i != 999999999);
+		require(participantIndex[participant] != 0);
 
-		require(!mechanism.scored[taskId][i]);
-		mechanism.scored[taskId][i] = true;
+		// require(!mechanism.scored[task][i]);
+		scored[task][participantIndex[participant]] = true;
 
-		uint128 j = uint128((i+1) % mechanism.participants.length);
-		uint128 k = uint128((i+2) % mechanism.participants.length);
+		uint128 j = uint128((participantIndex[participant]+1) % participants.length);
+		if (j == 0) {
+			j = 1;
+		}
+
+		uint128 k = uint128((participantIndex[participant]+2) % participants.length);
+		if (k == 0) {
+			k = 1;
+		}
 
 		// User and reference agent's meta predictions (underlying distribution)
-		uint128 y_i = mechanism.metaPreds[taskId][i];
-		uint128 y_j = mechanism.metaPreds[taskId][j];
+		uint128 y_i = getMetaPred(participant, task);
+		uint128 y_j = getMetaPred(participants[j], task);
 		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
-		uint128 x_i = mechanism.binaryPreds[taskId][i];
-		uint128 x_k = mechanism.binaryPreds[taskId][k];
+		uint128 x_i = getBinaryPred(participant, task);
+		uint128 x_k = getBinaryPred(participants[k], task);
 
 		uint128 delta = MathLib.wmin(y_j, MathLib.wsub(1 ether, y_j));
 
@@ -60,13 +65,13 @@ contract RBTSMechanism {
 
 	function RBTSQuadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
 		if (i == 1) {
-			return uint128(MathLib.wsub(MathLib.wmul(2 * 1 ether, p), MathLib.wmul(p, p)));
+			return MathLib.wsub(MathLib.wmul(2 * 1 ether, p), MathLib.wmul(p, p));
 		} else {
-			return uint128(MathLib.wsub(1 ether, MathLib.wmul(p, p)));
+			return MathLib.wsub(1 ether, MathLib.wmul(p, p));
 		}
 	}
 
 	function info() constant returns (address[], bytes32[], uint8[], uint256) {
-		return mechanism.info();
+		return _info();
 	}
 }
