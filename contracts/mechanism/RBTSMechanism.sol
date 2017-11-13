@@ -23,14 +23,14 @@ contract RBTSMechanism is Mechanism {
 		return score;
 	}
 
-	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
-		require(taskParticipants[taskId].length >= 3);
+	function scoreTask(bytes32 task, address participant) returns (uint128) {
+		require(taskParticipants[task].length >= 3);
 
 		// Reference agent index j, peer agent index k
 		require(participantIndex[participant] != 0);
 
-		// require(!mechanism.scored[taskId][i]);
-		scored[taskId][participantIndex[participant]] = true;
+		// require(!mechanism.scored[task][i]);
+		scored[task][participantIndex[participant]] = true;
 
 		uint128 j = uint128((participantIndex[participant]+1) % participants.length);
 		if (j == 0) {
@@ -43,13 +43,13 @@ contract RBTSMechanism is Mechanism {
 		}
 
 		// User and reference agent's meta predictions (underlying distribution)
-		uint128 y_i = getMetaPred(participant, taskIndex[taskId]);
-		uint128 y_j = getMetaPred(participants[j], taskIndex[taskId]);
+		uint128 y_i = getMetaPred(participant, task);
+		uint128 y_j = getMetaPred(participants[j], task);
 		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
-		uint128 x_i = getBinaryPred(participant, taskIndex[taskId]);
-		uint128 x_k = getBinaryPred(participants[k], taskIndex[taskId]);
+		uint128 x_i = getBinaryPred(participant, task);
+		uint128 x_k = getBinaryPred(participants[k], task);
 
 		uint128 delta = MathLib.wmin(y_j, MathLib.wsub(1 ether, y_j));
 

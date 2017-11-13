@@ -27,14 +27,14 @@ contract TruecoinProtocol {
 		owner = address(0x0);
 	}
 
-	function setNewMechanism(uint8 mechanismId, bytes32 name, address mechContract) returns (bool) {
+	function setNewMechanism(uint8 mechanismId, bytes32 name, address mechContract) {
+		MechanismManager(m).set(msg.sender, mechanismId, name, mechContract);
 		Setting(msg.sender, mechanismId, name, mechContract);
-		return MechanismManager(m).set(msg.sender, mechanismId, name, mechContract);
 	}
 
-	function submitPrediction(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 i, uint128 p) returns (bool) {
-		Submission(manager, msg.sender, taskId, [i,p]);
-		return MechanismManager(m).submit(manager, mechanismId, name, taskId, i, p, msg.sender);
+	function submitPrediction(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 signal, uint128 posterior) {
+		MechanismManager(m).submit(manager, mechanismId, name, taskId, signal, posterior, msg.sender);
+		Submission(manager, msg.sender, taskId, [signal, posterior]);
 	}
 
 	function claimScore(address manager, uint8 mechanismId, bytes32 name) returns (bool) {
@@ -42,8 +42,8 @@ contract TruecoinProtocol {
 		Score(manager, msg.sender, name, score);
 	}
 
-	function claimScoreByTask(address manager, uint8 mechanismId, bytes32 taskId, bytes32 name) returns (uint128) {
-		uint128 score = MechanismManager(m).scoreTask(manager, mechanismId, taskId, name, msg.sender);
+	function claimScoreByTask(address manager, uint8 mechanismId, bytes32 name, bytes32 taskId) {
+		uint128 score = MechanismManager(m).scoreTask(manager, mechanismId, name, taskId, msg.sender);
 		Score(manager, msg.sender, name, score);
 	}
 

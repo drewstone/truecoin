@@ -24,43 +24,51 @@ contract EndogenousMechanism is Mechanism {
 		}
 	}
 
-	function scoreTask(bytes32 taskId, address participant) returns (uint128) {
+	function scoreTask(bytes32 task, address participant) returns (uint128) {
 		require(participantIndex[participant] != 0);
 
 		// Return no payment if task was previously scored
-		if (scored[taskId][participantIndex[participant]]) {
+		if (scored[task][participantIndex[participant]]) {
 			return 0;
 		}
 
-		scored[taskId][participantIndex[participant]] = true;
+		scored[task][participantIndex[participant]] = true;
 
 		uint referenceAgentIndex;
 		uint[] memory participantDistinctTasks;
 		uint[] memory referenceDistinctTasks;
 
 		// Iterate over participants that have answered the same task and get non-overlapping tasks
-		for (uint i = 0; i < taskParticipants[taskId].length; i++) {
-			if (participants[taskParticipants[taskId][i]] != participant) {
+		for (uint i = 0; i < taskParticipants[task].length; i++) {
+			if (participants[taskParticipants[task][i]] != participant) {
 				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(
 					answeredTaskIndex[participant],
-					answeredTaskIndex[participants[taskParticipants[taskId][i]]]
+					answeredTaskIndex[participants[taskParticipants[task][i]]]
 				);
 
 				if (participantDistinctTasks.length > 0) {
-					referenceAgentIndex = taskParticipants[taskId][i];
+					referenceAgentIndex = taskParticipants[task][i];
 					break;
 				}
 			}
 		}
 
+		bytes32[] memory pTasks = new bytes32[](participantDistinctTasks.length);
+		bytes32[] memory rTasks = new bytes32[](referenceDistinctTasks.length);
+
+		for (i = 0; i < pTasks.length; i++) {
+			pTasks[i] = taskIds[participantDistinctTasks[i]];
+			rTasks[i] = taskIds[referenceDistinctTasks[i]];
+		}
+
 		return MathLib.wsub(
 			scoreAij(
-				getBinaryPred(participant, taskIndex[taskId]),
-				getBinaryPred(participants[referenceAgentIndex], taskIndex[taskId])
+				getBinaryPred(participant, task),
+				getBinaryPred(participants[referenceAgentIndex], task)
 			),
 			scoreBij(
-				getBinaryPreds(participant, participantDistinctTasks),
-				getBinaryPreds(participants[referenceAgentIndex], referenceDistinctTasks)
+				getBinaryPreds(participant, pTasks),
+				getBinaryPreds(participants[referenceAgentIndex], rTasks)
 			)
 		);
 		

@@ -80,30 +80,30 @@ contract Mechanism {
 		return (participants, taskIds, events, initiationTime);
 	}
 
-	function getBinaryPreds(address participant, uint[] taskIndices) isManager internal returns (uint128[]) {
-		uint128[] memory preds = new uint128[](taskIndices.length);
+	function getBinaryPreds(address participant, bytes32[] tasks) returns (uint128[]) {
+		uint128[] memory preds = new uint128[](tasks.length);
 
-		for (uint i = 0; i < taskIndices.length; i++) {
-			preds[i] = getBinaryPred(participant, taskIndices[i]);
+		for (uint i = 0; i < tasks.length; i++) {
+			preds[i] = getBinaryPred(participant, tasks[i]);
 		}
 
 		return preds;
 	}
 
-	function getBinaryPred(address participant, uint taskIndex) isManager internal returns (uint128) {
-		for (uint i = 0; i < taskParticipants[taskIds[taskIndex]].length; i++) {
-			if (taskParticipants[taskIds[taskIndex]][i] == participantIndex[participant]) {
-				return binaryPreds[taskIds[taskIndex]][i];
+	function getBinaryPred(address participant, bytes32 task) returns (uint128) {
+		for (uint i = 0; i < taskParticipants[task].length; i++) {
+			if (taskParticipants[task][i] == participantIndex[participant]) {
+				return binaryPreds[task][i];
 			}
 		}
 
 		return 0;
 	}
 
-	function getMetaPred(address participant, uint taskIndex) isManager internal returns (uint128) {
-		for (uint i = 0; i < taskParticipants[taskIds[taskIndex]].length; i++) {
-			if (taskParticipants[taskIds[taskIndex]][i] == participantIndex[participant]) {
-				return metaPreds[taskIds[taskIndex]][i];
+	function getMetaPred(address participant, bytes32 task) returns (uint128) {
+		for (uint i = 0; i < taskParticipants[task].length; i++) {
+			if (taskParticipants[task][i] == participantIndex[participant]) {
+				return metaPreds[task][i];
 			}
 		}
 
@@ -111,7 +111,6 @@ contract Mechanism {
 	}
 
 	modifier isManager() { 
-		require(initialized);
 		require(msg.sender == manager);
 		_;
 	}

@@ -27,12 +27,12 @@ contract MechanismManager {
 		if (mechanismId == 1) {
 			require(RBTSMechanism(mechContract).designer() == designer);
 
-			RBTSMechanism(mechContract).setup(protocol, msg.sender);
+			RBTSMechanism(mechContract).setup(msg.sender, this);
 			mechanismWrappers[mechanismIndex[designer]].RBTSIndex[name] = mechContract;
 		} else if (mechanismId == 2) {
 			require(EndogenousMechanism(mechContract).designer() == designer);
 
-			EndogenousMechanism(mechContract).setup(protocol, msg.sender);
+			EndogenousMechanism(mechContract).setup(protocol, this);
 			mechanismWrappers[mechanismIndex[designer]].ENDGIndex[name] = mechContract;
 		} else {
 			return false;
