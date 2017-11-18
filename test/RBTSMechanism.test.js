@@ -8,6 +8,12 @@ const RBTSMechanism = artifacts.require('./RBTSMechanism');
 contract('RBTSMechanism', (accounts) => {
   let protocol;
   let manager;
+  const mechanismDesigner = accounts[0];
+  const mechanismId = 1;
+  const mechanismName = 'Test Mechanism';
+  const events = [0,1];
+  const tasks = ['task1'];
+  const posterior = web3.toWei(1, 'ether');
 
   beforeEach(async function() {
     protocol = await TruecoinProtocol.new();
@@ -16,12 +22,6 @@ contract('RBTSMechanism', (accounts) => {
   });
 
   it('should set a new RBTS mechanism', async function() {
-    const mechanismDesigner = accounts[0];
-    const mechanismId = 1;
-    const mechanismName = 'Test Mechanism';
-    const events = [0,1];
-    const tasks = ['task1','task2','task3'];
-
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
     let result = await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
     assert.ok(result.logs.length > 0);
@@ -30,12 +30,6 @@ contract('RBTSMechanism', (accounts) => {
   });
 
   it('should submit votes to a task in an RBTS mechanism', async function() {
-    const mechanismDesigner = accounts[0];
-    const mechanismId = 1;
-    const mechanismName = 'Test Mechanism';
-    const events = [0,1];
-    const tasks = ['task1'];
-
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
     await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
 
@@ -53,12 +47,7 @@ contract('RBTSMechanism', (accounts) => {
   });
 
   it('should score votes to a task in an RBTS mechanism', async function() {
-    const mechanismDesigner = accounts[0];
-    const mechanismId = 1;
-    const mechanismName = 'Test Mechanism';
-    const events = [0,1];
-    const tasks = ['task1'];
-    const posterior = web3.toWei(1, 'ether');
+
 
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
     await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
@@ -70,13 +59,6 @@ contract('RBTSMechanism', (accounts) => {
   });
 
   it('should submit votes to a task in an RBTS mechanism using general score function', async function() {
-    const mechanismDesigner = accounts[0];
-    const mechanismId = 1;
-    const mechanismName = 'Test Mechanism';
-    const events = [0,1];
-    const tasks = ['task1'];
-    const posterior = web3.toWei(1, 'ether');
-
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
     await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
 

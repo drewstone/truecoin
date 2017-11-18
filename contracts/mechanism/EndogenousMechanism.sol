@@ -4,7 +4,6 @@ import '../math/MathLib.sol';
 import './Mechanism.sol';
 
 contract EndogenousMechanism is Mechanism {	
-	address public manager;
 	address public designer;
 	mapping (bytes32 => uint) participantCount;
 
@@ -26,70 +25,83 @@ contract EndogenousMechanism is Mechanism {
 	function scoreTask(bytes32 task, address participant) returns (uint128) {
 		require(participantIndex[participant] != 0);
 
-		// Return no payment if task was previously scored
-		if (scored[task][participantIndex[participant]]) {
+		if (getParticipantIndexByTask(participant, task) == taskParticipants[task].length) {
 			return 0;
-		}
+		} else if (scored[task][getParticipantIndexByTask(participant, task)]) {
+			return 0;
+		} else {
+			scored[task][getParticipantIndexByTask(participant, task)] = true;
+			uint referenceAgentIndex;
 
-		scored[task][participantIndex[participant]] = true;
+			// Iterate over participants that have answered the same task and get non-overlapping tasks
+			for (uint i = 0; i < taskParticipants[task].length; i++) {
+				if (participants[taskParticipants[task][i]] != participant) {
+					var (participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(
+						answeredTaskIndex[participant],
+						answeredTaskIndex[participants[taskParticipants[task][i]]]
+					);
 
-		uint referenceAgentIndex;
-		uint[] memory participantDistinctTasks;
-		uint[] memory referenceDistinctTasks;
-
-		// Iterate over participants that have answered the same task and get non-overlapping tasks
-		for (uint i = 0; i < taskParticipants[task].length; i++) {
-			if (participants[taskParticipants[task][i]] != participant) {
-				(participantDistinctTasks, referenceDistinctTasks) = MathLib.getDistinctElements(
-					answeredTaskIndex[participant],
-					answeredTaskIndex[participants[taskParticipants[task][i]]]
-				);
-
-				if (participantDistinctTasks.length > 0) {
-					referenceAgentIndex = taskParticipants[task][i];
-					break;
+					if (participantDistinctTasks.length > 0) {
+						referenceAgentIndex = taskParticipants[task][i];
+						break;
+					}
 				}
+			}
+
+			if (participantDistinctTasks.length > 0) {
+				bytes32[] memory pTasks = new bytes32[](participantDistinctTasks.length);
+				bytes32[] memory rTasks = new bytes32[](referenceDistinctTasks.length);
+
+				// Subtract 1 from task indices since we increment by 1 to start
+				for (i = 0; i < pTasks.length; i++) {
+					pTasks[i] = taskIds[participantDistinctTasks[i] - 1];
+					rTasks[i] = taskIds[referenceDistinctTasks[i] - 1];
+				}
+
+				return scoreBij(
+					getBinaryPreds(participant, pTasks),
+					getBinaryPreds(participants[referenceAgentIndex], rTasks)
+				);
+				// return MathLib.wsub(
+				// 	scoreAij(
+				// 		getBinaryPred(participant, task),
+				// 		getBinaryPred(participants[referenceAgentIndex], task)
+				// 	),
+				// 	scoreBij(
+				// 		getBinaryPreds(participant, pTasks),
+				// 		getBinaryPreds(participants[referenceAgentIndex], rTasks)
+				// 	)
+				// );
 			}
 		}
 
-		bytes32[] memory pTasks = new bytes32[](participantDistinctTasks.length);
-		bytes32[] memory rTasks = new bytes32[](referenceDistinctTasks.length);
-
-		for (i = 0; i < pTasks.length; i++) {
-			pTasks[i] = taskIds[participantDistinctTasks[i]];
-			rTasks[i] = taskIds[referenceDistinctTasks[i]];
-		}
-
-		return MathLib.wsub(
-			scoreAij(
-				getBinaryPred(participant, task),
-				getBinaryPred(participants[referenceAgentIndex], task)
-			),
-			scoreBij(
-				getBinaryPreds(participant, pTasks),
-				getBinaryPreds(participants[referenceAgentIndex], rTasks)
-			)
-		);
-		
+		return 0;
 	}
 
-	function scoreAij(uint p, uint r) internal constant returns (uint128) {
-		require((p == 0 || p == 1) && (r == 0 || r == 1));
-		uint128 first = MathLib.cast(p * r);
-		uint128 second = MathLib.cast((1 - p) * (1 - r));
-		uint128 score = 1 ether * (first + second);
+	function scoreAij(uint128 p, uint128 r) internal constant returns (uint128) {
+		// require((p == 0 || p == 1) && (r == 0 || r == 1));
+		uint128 first = p * r;
+		uint128 second = (1 - p) * (1 - r);
+		uint128 score = 1.0 ether * (first + second);
 		return score;
 	}
 
 	function scoreBij(uint128[] ps, uint128[] rs) internal constant returns (uint128) {
 		require(ps.length == rs.length);
 
-		uint128 d = MathLib.cast(ps.length * 1 ether);
-		uint128 first = MathLib.wdiv(MathLib.cast(MathLib.sum(ps)) * 1 ether, d);
-		uint128 second = MathLib.wdiv(MathLib.cast(MathLib.sum(rs)) * 1 ether, d);
+		uint128 d = MathLib.cast(ps.length * 1.0 ether);
+		uint128 p_sum = MathLib.sum(ps) * 1.0 ether;
+		uint128 r_sum = MathLib.sum(rs) * 1.0 ether;
+
+		uint128 first = MathLib.wdiv(p_sum, d);
+		uint128 second = MathLib.wdiv(r_sum, d);
+
+		// uint128 first = MathLib.wdiv(MathLib.cast(MathLib.sum(ps)) * 1 ether, d);
+		// uint128 second = MathLib.wdiv(MathLib.cast(MathLib.sum(rs)) * 1 ether, d);
 		uint128 left = MathLib.wmul(first, second);
-		uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
-		return MathLib.wadd(left, right);
+		return left;
+		// uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
+		// return MathLib.wadd(left, right);
 	}
 
 	function info() returns (address[], bytes32[], uint8[], uint256) {

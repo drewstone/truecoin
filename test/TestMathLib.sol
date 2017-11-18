@@ -114,5 +114,9 @@ contract TestMathLib {
 	function test_wdiv_fractions() {
 		Assert.equal(uint(MathLib.wdiv(1.0 ether, 2.0 ether)), 0.5 ether, "1.0/2.0 should equal 0.5");
 		Assert.equal(uint(MathLib.wdiv(2.0 ether, 2.0 ether)), 1.0 ether, "2.0*2.0 should equal 1.0");
-	}    
+
+		uint d = 10;
+		uint128 big_d = MathLib.cast(d * 1.0 ether);
+		Assert.equal(uint(MathLib.wdiv(1.0 ether, big_d)), 0.1 ether, "1.0/10.0 should equal 0.1");
+	}
 }

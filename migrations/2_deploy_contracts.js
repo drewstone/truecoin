@@ -1,4 +1,5 @@
 const MathLib = artifacts.require('./MathLib');
+const OpenMechanism = artifacts.require('./OpenMechanism');
 const Mechanism = artifacts.require('./Mechanism');
 const MechanismManager = artifacts.require('./MechanismManager');
 const RBTSMechanism = artifacts.require('./RBTSMechanism');
@@ -9,6 +10,7 @@ module.exports = function(deployer) {
   // Libraries
   deployer.deploy(MathLib);
   deployer.deploy(Mechanism);
+  deployer.deploy(OpenMechanism);
 
   // Linked mechanisms and libraries
   deployer.link(MathLib, RBTSMechanism);

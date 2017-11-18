@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-contract Mechanism {
+contract OpenMechanism {
 	address public protocol;
 	address public manager;
 	address public designer;
@@ -9,28 +9,28 @@ contract Mechanism {
 	bytes32[] public taskIds;
 	address[] public participants;
 	uint8[] public events;
-	uint256 initiationTime;
+	uint256 public initiationTime;
 
 	// Index of participants
-	mapping (address => uint) public participantIndex;
+	mapping (address => uint) participantIndex;
 	
 	// Index of tasks (redundant for indexing and iteration)
-	mapping (bytes32 => uint) public taskIndex;
+	mapping (bytes32 => uint) taskIndex;
 
 	// Participants that have answered a specific task
-	mapping (bytes32 => uint[]) public taskParticipants;
+	mapping (bytes32 => uint[]) taskParticipants;
 
 	// Tasks answered by specific participant
-	mapping (address => uint[]) public answeredTaskIndex;
+	mapping (address => uint[]) answeredTaskIndex;
 	
 	// Binary predictions for a task
-	mapping (bytes32 => uint128[]) public binaryPreds;
+	mapping (bytes32 => uint128[]) binaryPreds;
 
 	// Meta predictions for a task
-	mapping (bytes32 => uint128[]) public metaPreds;
+	mapping (bytes32 => uint128[]) metaPreds;
 
 	// Scored statistics for a task indexed as in participantIndex
-	mapping (bytes32 => bool[]) public scored;
+	mapping (bytes32 => bool[]) scored;
 
 	function setup(address prtcl, address mngr) {
 		protocol = prtcl;
@@ -38,7 +38,7 @@ contract Mechanism {
 		initialized = true;
 	}
 
-	function _init(uint8[] evts, bytes32[] tasks) internal {
+	function _init(uint8[] evts, bytes32[] tasks) {
 		require(initiationTime == 0);
 
 		taskIds = tasks;
@@ -51,7 +51,7 @@ contract Mechanism {
 		}
 	}
 
-	function _submit(bytes32 taskId, uint128 signal, uint128 posterior, address submitter) isManager internal {
+	function _submit(bytes32 taskId, uint128 signal, uint128 posterior, address submitter) isManager {
 		require(taskIndex[taskId] > 0);
 
 		// Ensure submitter has not submitted answers to this task
@@ -76,8 +76,8 @@ contract Mechanism {
 		answeredTaskIndex[submitter].push(taskIndex[taskId]);
 	}
 
-	function _info() internal returns (address[], bytes32[], uint8[], uint256) {
-		return (participants, taskIds, events, initiationTime);
+	function _info() returns (bytes32[], address[], uint8[], uint256) {
+		return (taskIds, participants, events, initiationTime);
 	}
 
 	function getParticipantIndexByTask(address participant, bytes32 task) returns (uint) {
@@ -86,8 +86,6 @@ contract Mechanism {
 				return i;
 			}
 		}
-
-		return taskParticipants[task].length;
 	}
 
 	function getBinaryPreds(address participant, bytes32[] tasks) returns (uint128[]) {
@@ -124,5 +122,4 @@ contract Mechanism {
 		require(msg.sender == manager);
 		_;
 	}
-	
 }
