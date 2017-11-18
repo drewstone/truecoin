@@ -58,20 +58,16 @@ contract EndogenousMechanism is Mechanism {
 					rTasks[i] = taskIds[referenceDistinctTasks[i] - 1];
 				}
 
-				return scoreBij(
-					getBinaryPreds(participant, pTasks),
-					getBinaryPreds(participants[referenceAgentIndex], rTasks)
+				return MathLib.wsub(
+					scoreAij(
+						getBinaryPred(participant, task),
+						getBinaryPred(participants[referenceAgentIndex], task)
+					),
+					scoreBij(
+						getBinaryPreds(participant, pTasks),
+						getBinaryPreds(participants[referenceAgentIndex], rTasks)
+					)
 				);
-				// return MathLib.wsub(
-				// 	scoreAij(
-				// 		getBinaryPred(participant, task),
-				// 		getBinaryPred(participants[referenceAgentIndex], task)
-				// 	),
-				// 	scoreBij(
-				// 		getBinaryPreds(participant, pTasks),
-				// 		getBinaryPreds(participants[referenceAgentIndex], rTasks)
-				// 	)
-				// );
 			}
 		}
 
@@ -96,12 +92,9 @@ contract EndogenousMechanism is Mechanism {
 		uint128 first = MathLib.wdiv(p_sum, d);
 		uint128 second = MathLib.wdiv(r_sum, d);
 
-		// uint128 first = MathLib.wdiv(MathLib.cast(MathLib.sum(ps)) * 1 ether, d);
-		// uint128 second = MathLib.wdiv(MathLib.cast(MathLib.sum(rs)) * 1 ether, d);
 		uint128 left = MathLib.wmul(first, second);
-		return left;
-		// uint128 right = MathLib.wmul(MathLib.wsub(1 ether, first), MathLib.wsub(1 ether, second));
-		// return MathLib.wadd(left, right);
+		uint128 right = MathLib.wmul(MathLib.wsub(1.0 ether, first), MathLib.wsub(1.0 ether, second));
+		return MathLib.wadd(left, right);
 	}
 
 	function info() returns (address[], bytes32[], uint8[], uint256) {
