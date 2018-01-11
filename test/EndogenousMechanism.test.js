@@ -49,7 +49,7 @@ contract('EndogenousMechanism', (accounts) => {
     assert.equal(result.logs[0].args.participant.toString(), accounts[2]);
 });
 
-  it('should submit votes to a task in an Endogenous mechanism', async function() {
+  it('should score votes to a task in an Endogenous mechanism', async function() {
     const endg = await EndogenousMechanism.new(events, tasks, { from: mechanismDesigner });
     await protocol.setNewMechanism(mechanismId, mechanismName, endg.address, { from: mechanismDesigner });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, 1, { from: accounts[1] });
@@ -58,10 +58,7 @@ contract('EndogenousMechanism', (accounts) => {
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[2], 1, 1, { from: accounts[2] });
 
     let result = await protocol.claimScoreByTask(mechanismDesigner, mechanismId, mechanismName, tasks[0], { from: accounts[1] });
-    console.log(web3.fromWei(result.logs[0].args.score.toNumber(), 'ether'));
     result = await protocol.claimScoreByTask(mechanismDesigner, mechanismId, mechanismName, tasks[1], { from: accounts[1] });
-    console.log(web3.fromWei(result.logs[0].args.score.toNumber(), 'ether'));
     result = await protocol.claimScoreByTask(mechanismDesigner, mechanismId, mechanismName, tasks[2], { from: accounts[1] });
-    console.log(web3.fromWei(result.logs[0].args.score.toNumber(), 'ether'));
   });
 });
