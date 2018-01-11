@@ -3,26 +3,34 @@ pragma solidity ^0.4.10;
 import '../math/MathLib.sol';
 import './Mechanism.sol';
 
-contract EndogenousMechanism is Mechanism {	
-	address public designer;
-	mapping (bytes32 => uint) participantCount;
-
-	function EndogenousMechanism(uint8[] events, bytes32[] taskIds, uint256 timeLength) {
+contract EndogenousMechanism is Mechanism {
+	function EndogenousMechanism(uint8[] events, bytes32[] taskIds) {
 		designer = msg.sender;
-		_init(events, taskIds, timeLength);
+		_init(events, taskIds);
 	}
 
 	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {
 		_submit(taskId, signal, posterior, participant);
 	}
 
-	function score(address participant) returns (uint128 score) {
+	function score() returns (uint128[]) {
+		uint128[] memory scores = new uint128[](participants.length);
+
+		for (uint i = 0; i < participants.length; i++) {
+			scores[i] = scoreParticipant(participants[i]);
+		}
+
+		return scores;
+	}
+	
+
+	function scoreParticipant(address participant) returns (uint128 score) {
 		for (uint i = 0; i < answeredTaskIndex[participant].length; i++) {
-			score = MathLib.wadd(score, scoreTask(taskIds[answeredTaskIndex[participant][i] - 1], participant));
+			score = MathLib.wadd(score, scoreTaskByParticipant(taskIds[answeredTaskIndex[participant][i] - 1], participant));
 		}
 	}
 
-	function scoreTask(bytes32 task, address participant) returns (uint128) {
+	function scoreTaskByParticipant(bytes32 task, address participant) returns (uint128) {
 		require(participantIndex[participant] != 0);
 
 		if (getParticipantIndexByTask(participant, task) == taskParticipants[task].length) {

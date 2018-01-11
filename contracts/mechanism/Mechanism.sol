@@ -9,8 +9,9 @@ contract Mechanism {
 	bytes32[] public taskIds;
 	address[] public participants;
 	uint8[] public events;
-	uint256 initiationTime;
-	uint256 terminationTime;
+	uint256 public timeLength;
+	uint256 public initiationTime;
+	uint256 public terminationTime;
 
 	// Index of participants
 	mapping (address => uint) public participantIndex;
@@ -33,12 +34,13 @@ contract Mechanism {
 	// Scored statistics for a task indexed as in participantIndex
 	mapping (bytes32 => bool[]) public scored;
 
-	function setup(address prtcl, address mngr) {
+	function setup(address prtcl, address mngr, uint length) {
 		protocol = prtcl;
 		manager = mngr;
+		timeLength = length;
 	}
 
-	function _init(uint8[] evts, bytes32[] tasks, uint256 timeLength) internal {
+	function _init(uint8[] evts, bytes32[] tasks) internal {
 		require(initiationTime == 0);
 		require(!initialized);
 
@@ -54,7 +56,7 @@ contract Mechanism {
 		}
 	}
 
-	function _submit(bytes32 taskId, uint128 signal, uint128 posterior, address submitter) isManager internal {
+	function _submit(bytes32 taskId, uint128 signal, uint128 posterior, address submitter) isLive isManager internal {
 		require(taskIndex[taskId] > 0);
 
 		// Ensure submitter has not submitted answers to this task
@@ -123,9 +125,20 @@ contract Mechanism {
 		return 0;
 	}
 
+	function getParticipants() returns (address[] p) {
+		p = participants;
+	}
+	
+
 	modifier isManager() { 
 		require(msg.sender == manager);
 		_;
 	}
-	
+
+	modifier isLive() { 
+			require(initialized);
+			require(now <= terminationTime);
+			_; 
+		}
+			
 }

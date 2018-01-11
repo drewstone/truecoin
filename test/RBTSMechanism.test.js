@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const TestHelper = require('../util/testhelpers');
 
 const TruecoinProtocol = artifacts.require('./TruecoinProtocol');

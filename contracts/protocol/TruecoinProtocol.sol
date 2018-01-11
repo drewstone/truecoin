@@ -26,6 +26,12 @@ contract TruecoinProtocol {
 		address participant,
 		bytes32 name,
 		uint128 score);
+	event Settlement(
+		address designer,
+		address caller,
+		bytes32 name,
+		address mechContract);
+	
 
 	function TruecoinProtocol() {
 		owner = msg.sender;
@@ -43,6 +49,11 @@ contract TruecoinProtocol {
 	function setNewMechanism(uint8 mechanismId, bytes32 name, address mechContract, uint256 timeLength) {
 		MechanismManager(m).set(msg.sender, mechanismId, name, mechContract, timeLength);
 		Setting(msg.sender, mechanismId, name, mechContract, timeLength);
+	}
+
+	function settleMechanism(uint8 mechanismId, bytes32 name, address mechContract) {
+		MechanismManager(m).settle(msg.sender, mechanismId, name, mechContract);
+		Settlement(msg.sender, mechanismId, name, mechContract);
 	}
 
 	function submitPrediction(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, uint128 signal, uint128 posterior) {
@@ -73,7 +84,7 @@ contract TruecoinProtocol {
 	}
 
 	function claimScoreByTask(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId) {
-		uint128 score = MechanismManager(m).scoreTask(designer, mechanismId, name, taskId, msg.sender);
+		uint128 score = MechanismManager(m).scoreTaskByParticipant(designer, mechanismId, name, taskId, msg.sender);
 		Score(designer, msg.sender, name, score);
 	}
 

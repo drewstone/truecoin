@@ -27,13 +27,35 @@ contract MechanismManager {
 		if (mechanismId == 1) {
 			require(RBTSMechanism(mechContract).designer() == designer);
 
-			RBTSMechanism(mechContract).setup(msg.sender, this);
+			RBTSMechanism(mechContract).setup(msg.sender, this, timeLength);
 			mechanismWrappers[mechanismIndex[designer]].RBTSIndex[name] = mechContract;
 		} else if (mechanismId == 2) {
 			require(EndogenousMechanism(mechContract).designer() == designer);
 
-			EndogenousMechanism(mechContract).setup(protocol, this);
+			EndogenousMechanism(mechContract).setup(protocol, this, timeLength);
 			mechanismWrappers[mechanismIndex[designer]].ENDGIndex[name] = mechContract;
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	function settle(address designer, uint8 mechanismId, bytes32 name, address mechContract) isProtocol returns (bool) {
+		if (mechanismIndex[designer] == 0) {
+			mechanismIndex[designer] = mechanismWrappers.length++;
+		}
+
+		uint128[] memory scores;
+		address[] memory participants;
+		uint[] memory binaryPreds;
+
+		if (mechanismId == 1) {
+			require(RBTSMechanism(mechContract).designer() == designer);
+			require(RBTSMechanism(mechContract).terminationTime() < now);
+		} else if (mechanismId == 2) {
+			require(EndogenousMechanism(mechContract).designer() == designer);
+			require(EndogenousMechanism(mechContract).terminationTime() < now);
 		} else {
 			return false;
 		}
@@ -57,33 +79,41 @@ contract MechanismManager {
 		return true;
 	}
 
+	/*
+	 *	------------------------ VERSION 1 software - LEGACY functionality ------------------------
+	 */
+
 	function score(address designer, uint8 mechanismId, bytes32 name, address participant) isProtocol returns (uint128) {
 		require(mechanismIndex[designer] > 0);
 
 		if (mechanismId == 1) {
 			return RBTSMechanism(mechanismWrappers[mechanismIndex[designer]].RBTSIndex[name])
-			.score(participant);
+			.scoreParticipant(participant);
 		} else if (mechanismId == 2) {
 			return EndogenousMechanism(mechanismWrappers[mechanismIndex[designer]].ENDGIndex[name])
-			.score(participant);
+			.scoreParticipant(participant);
 		}
 
 		return 0;
 	}
 
-	function scoreTask(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, address participant) isProtocol returns (uint128) {
+	function scoreTaskByParticipant(address designer, uint8 mechanismId, bytes32 name, bytes32 taskId, address participant) isProtocol returns (uint128) {
 		require(mechanismIndex[designer] > 0);
 
 		if (mechanismId == 1) {
 			return RBTSMechanism(mechanismWrappers[mechanismIndex[designer]].RBTSIndex[name])
-			.scoreTask(taskId, participant);
+			.scoreTaskByParticipant(taskId, participant);
 		} else if (mechanismId == 2) {
 			return EndogenousMechanism(mechanismWrappers[mechanismIndex[designer]].ENDGIndex[name])
-			.scoreTask(taskId, participant);
+			.scoreTaskByParticipant(taskId, participant);
 		}
 
 		return 0;
 	}
+
+	/*
+	 * --------------------------------------------------------------------------------------------
+	 */
 
 	function get(address designer, uint8 mechanismId, bytes32 name) returns (address) {
 		require(mechanismIndex[designer] > 0);
