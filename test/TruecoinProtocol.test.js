@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const TestHelper = require('../util/testhelpers');
 
 const TruecoinProtocol = artifacts.require('./TruecoinProtocol');
@@ -7,6 +6,7 @@ const RBTSMechanism = artifacts.require('./RBTSMechanism');
 
 contract('TruecoinProtocol', (accounts) => {
   let protocol;
+  const timeLength = 1000
 
   beforeEach(async function() {
     protocol = await TruecoinProtocol.new();
@@ -37,7 +37,7 @@ contract('TruecoinProtocol', (accounts) => {
     const r = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
 
     await protocol.initProtocol(m.address);
-    let result = await protocol.setNewMechanism(mechanismId, mechanismName, r.address, { from: mechanismDesigner });
+    let result = await protocol.setNewMechanism(mechanismId, mechanismName, r.address, timeLength, { from: mechanismDesigner });
     assert.ok(result.logs.length > 0);
     assert.equal(result.logs[0].event, 'Setting');
     assert.equal(result.logs[0].args.mechContract.toString(), r.address);
@@ -54,6 +54,6 @@ contract('TruecoinProtocol', (accounts) => {
     const r = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
 
     await protocol.initProtocol(m.address);
-    TestHelper.expectThrow(protocol.setNewMechanism(mechanismId, mechanismName, r.address, { from: accounts[1] }));
+    TestHelper.expectThrow(protocol.setNewMechanism(mechanismId, mechanismName, r.address, timeLength, { from: accounts[1] }));
   });
 });

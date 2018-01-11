@@ -10,6 +10,7 @@ contract Mechanism {
 	address[] public participants;
 	uint8[] public events;
 	uint256 initiationTime;
+	uint256 terminationTime;
 
 	// Index of participants
 	mapping (address => uint) public participantIndex;
@@ -35,15 +36,17 @@ contract Mechanism {
 	function setup(address prtcl, address mngr) {
 		protocol = prtcl;
 		manager = mngr;
-		initialized = true;
 	}
 
-	function _init(uint8[] evts, bytes32[] tasks) internal {
+	function _init(uint8[] evts, bytes32[] tasks, uint256 timeLength) internal {
 		require(initiationTime == 0);
+		require(!initialized);
 
+		initialized = true;
 		taskIds = tasks;
 		events = evts;
 		initiationTime = now;
+		terminationTime = initiationTime + timeLength;
 		participants.length++;
 
 		for (uint i = 0; i < tasks.length; i++) {

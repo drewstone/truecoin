@@ -7,9 +7,9 @@ contract EndogenousMechanism is Mechanism {
 	address public designer;
 	mapping (bytes32 => uint) participantCount;
 
-	function EndogenousMechanism(uint8[] events, bytes32[] taskIds) {
+	function EndogenousMechanism(uint8[] events, bytes32[] taskIds, uint256 timeLength) {
 		designer = msg.sender;
-		_init(events, taskIds);
+		_init(events, taskIds, timeLength);
 	}
 
 	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {

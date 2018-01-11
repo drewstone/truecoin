@@ -8,6 +8,7 @@ const RBTSMechanism = artifacts.require('./RBTSMechanism');
 contract('RBTSMechanism', (accounts) => {
   let protocol;
   let manager;
+  const timeLength = 1000
   const mechanismDesigner = accounts[0];
   const mechanismId = 1;
   const mechanismName = 'Test Mechanism';
@@ -23,7 +24,7 @@ contract('RBTSMechanism', (accounts) => {
 
   it('should set a new RBTS mechanism', async function() {
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
-    let result = await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
+    let result = await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, timeLength, { from: mechanismDesigner });
     assert.ok(result.logs.length > 0);
     assert.equal(result.logs[0].event, 'Setting');
     assert.equal(result.logs[0].args.mechContract.toString(), rbts.address);
@@ -31,7 +32,7 @@ contract('RBTSMechanism', (accounts) => {
 
   it('should submit votes to a task in an RBTS mechanism', async function() {
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
-    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
+    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, timeLength, { from: mechanismDesigner });
 
     let result = await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, 1, { from: accounts[1] });
     assert.equal(result.logs[0].event, 'Submission');
@@ -50,7 +51,7 @@ contract('RBTSMechanism', (accounts) => {
 
 
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
-    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
+    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, timeLength, { from: mechanismDesigner });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[1] });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[2] });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[3] });
@@ -60,7 +61,7 @@ contract('RBTSMechanism', (accounts) => {
 
   it('should submit votes to a task in an RBTS mechanism using general score function', async function() {
     const rbts = await RBTSMechanism.new(events, tasks, { from: mechanismDesigner });
-    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, { from: mechanismDesigner });
+    await protocol.setNewMechanism(mechanismId, mechanismName, rbts.address, timeLength, { from: mechanismDesigner });
 
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[1] });
     await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, posterior, { from: accounts[2] });

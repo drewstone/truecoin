@@ -19,7 +19,7 @@ contract MechanismManager {
 		mechanismWrappers.length++;
 	}
 
-	function set(address designer, uint8 mechanismId, bytes32 name, address mechContract) isProtocol returns (bool) {
+	function set(address designer, uint8 mechanismId, bytes32 name, address mechContract, uint256 timeLength) isProtocol returns (bool) {
 		if (mechanismIndex[designer] == 0) {
 			mechanismIndex[designer] = mechanismWrappers.length++;
 		}
