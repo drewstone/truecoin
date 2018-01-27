@@ -23,32 +23,32 @@ contract RBTSMechanism is Mechanism {
 		return scores;
 	}
 
-	function scoreTask(bytes32 task) returns (address[]) {
-		uint128[] memory scores = new uint128[](participants.length);
-		address[] memory zeroes = new address[](participants.length);
-		address[] memory ones = new address[](participants.length);
+	// function scoreTask(bytes32 task) returns (address[]) {
+	// 	uint128[] memory scores = new uint128[](participants.length);
+	// 	address[] memory zeroes = new address[](participants.length);
+	// 	address[] memory ones = new address[](participants.length);
 
-		uint128 summed_zeroes;
-		uint128 summed_ones;
+	// 	uint128 summed_zeroes;
+	// 	uint128 summed_ones;
 
-		for (uint i = 0; i < taskParticipants[task].length; i++) {
-			if (binaryPreds[task][i] == 0) {
-				zeroes[i] = participants[taskParticipants[task][i]];
-				summed_zeroes += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
-			} else {
-				ones[i] = participants[taskParticipants[task][i]];
-				summed_ones += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
-			}
-		}
+	// 	for (uint i = 0; i < taskParticipants[task].length; i++) {
+	// 		if (binaryPreds[task][i] == 0) {
+	// 			zeroes[i] = participants[taskParticipants[task][i]];
+	// 			summed_zeroes += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
+	// 		} else {
+	// 			ones[i] = participants[taskParticipants[task][i]];
+	// 			summed_ones += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
+	// 		}
+	// 	}
 
-		if (summed_zeroes > summed_ones) {
-			return zeroes;
-		} else if (summed_zeroes < summed_ones) {
-			return ones;
-		} else {
-			return new address[](0);
-		}
-	}
+	// 	if (summed_zeroes > summed_ones) {
+	// 		return zeroes;
+	// 	} else if (summed_zeroes < summed_ones) {
+	// 		return ones;
+	// 	} else {
+	// 		return new address[](0);
+	// 	}
+	// }
 
 	function scoreParticipant(address participant) returns (uint128 score) {
 		for (uint i = 0; i < answeredTaskIndex[participant].length; i++) {

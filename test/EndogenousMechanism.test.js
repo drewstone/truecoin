@@ -8,7 +8,7 @@ const EndogenousMechanism = artifacts.require('./EndogenousMechanism');
 contract('EndogenousMechanism', (accounts) => {
   let protocol;
   let manager;
-  const timeLength = 1000
+  const timeLength = 100000000000
   const mechanismDesigner = accounts[0];
   const mechanismId = 2;
   const mechanismName = 'Test Mechanism';
@@ -32,22 +32,13 @@ contract('EndogenousMechanism', (accounts) => {
   it('should submit votes to a task in an Endogenous mechanism', async function() {
     const endg = await EndogenousMechanism.new(events, tasks, { from: mechanismDesigner });
     await protocol.setNewMechanism(mechanismId, mechanismName, endg.address, timeLength, { from: mechanismDesigner });
-
-    let result = await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, 1, { from: accounts[1] });
-    assert.equal(result.logs[0].event, 'Submission');
-    assert.equal(result.logs[0].args.participant.toString(), accounts[1]);
-
-    result = await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[1], 1, 1, { from: accounts[1] });
-    assert.equal(result.logs[0].event, 'Submission');
-    assert.equal(result.logs[0].args.participant.toString(), accounts[1]);
-
-    result = await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[1], 1, 1, { from: accounts[2] });
-    assert.equal(result.logs[0].event, 'Submission');
-    assert.equal(result.logs[0].args.participant.toString(), accounts[2]);
     
-    result = await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[2], 1, 1, { from: accounts[2] });
-    assert.equal(result.logs[0].event, 'Submission');
-    assert.equal(result.logs[0].args.participant.toString(), accounts[2]);
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[0], 1, 1, { from: accounts[1] });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[1], 1, 1, { from: accounts[1] });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[1], 1, 1, { from: accounts[2] });
+    await protocol.submitPrediction(mechanismDesigner, mechanismId, mechanismName, tasks[2], 1, 1, { from: accounts[2] });
+
+
 });
 
   it('should score votes to a task in an Endogenous mechanism', async function() {

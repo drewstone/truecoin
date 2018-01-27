@@ -136,7 +136,6 @@ contract Mechanism {
 	}
 
 	modifier isLive() { 
-			require(initialized);
 			require(now <= terminationTime);
 			_; 
 		}

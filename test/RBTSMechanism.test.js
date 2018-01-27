@@ -7,7 +7,7 @@ const RBTSMechanism = artifacts.require('./RBTSMechanism');
 contract('RBTSMechanism', (accounts) => {
   let protocol;
   let manager;
-  const timeLength = 1000
+  const timeLength = 100000000000;
   const mechanismDesigner = accounts[0];
   const mechanismId = 1;
   const mechanismName = 'Test Mechanism';
