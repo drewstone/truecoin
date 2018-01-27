@@ -1,7 +1,7 @@
 pragma solidity ^0.4.10;
 
-import '../mechanism/RBTSMechanism.sol';
-import '../mechanism/EndogenousMechanism.sol';
+import './RBTSMechanism.sol';
+import './EndogenousMechanism.sol';
 
 contract MechanismManager {
 	address public protocol;

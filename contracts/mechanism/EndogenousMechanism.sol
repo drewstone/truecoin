@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import '../math/MathLib.sol';
+import './MathLib.sol';
 import './Mechanism.sol';
 
 contract EndogenousMechanism is Mechanism {
