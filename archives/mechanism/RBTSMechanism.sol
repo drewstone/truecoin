@@ -1,16 +1,16 @@
 pragma solidity ^0.4.10;
 
-import './MathLib.sol';
+import '../math/MathLib.sol';
 import './Mechanism.sol';
 
 contract RBTSMechanism is Mechanism {
-	function RBTSMechanism(uint8[] events, bytes32[] taskIds) {
+	function RBTSMechanism(uint8[] events, bytes32[] questionIds) {
 		designer = msg.sender;
-		_init(events, taskIds);
+		_init(events, questionIds);
 	}
 
-	function submit(bytes32 taskId, uint128 signal, uint128 posterior, address participant) {
-		_submit(taskId, signal, posterior, participant);
+	function submit(bytes32 questionId, uint128 signal, uint128 posterior, address participant) {
+		_submit(questionId, signal, posterior, participant);
 	}
 
 	function score() returns (uint128[]) {
@@ -23,7 +23,7 @@ contract RBTSMechanism is Mechanism {
 		return scores;
 	}
 
-	// function scoreTask(bytes32 task) returns (address[]) {
+	// function scoreQuestion(bytes32 question) returns (address[]) {
 	// 	uint128[] memory scores = new uint128[](participants.length);
 	// 	address[] memory zeroes = new address[](participants.length);
 	// 	address[] memory ones = new address[](participants.length);
@@ -31,13 +31,13 @@ contract RBTSMechanism is Mechanism {
 	// 	uint128 summed_zeroes;
 	// 	uint128 summed_ones;
 
-	// 	for (uint i = 0; i < taskParticipants[task].length; i++) {
-	// 		if (binaryPreds[task][i] == 0) {
-	// 			zeroes[i] = participants[taskParticipants[task][i]];
-	// 			summed_zeroes += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
+	// 	for (uint i = 0; i < questionParticipants[question].length; i++) {
+	// 		if (binaryPreds[question][i] == 0) {
+	// 			zeroes[i] = participants[questionParticipants[question][i]];
+	// 			summed_zeroes += scoreQuestionByParticipant(question, participants[questionParticipants[question][i]]);
 	// 		} else {
-	// 			ones[i] = participants[taskParticipants[task][i]];
-	// 			summed_ones += scoreTaskByParticipant(task, participants[taskParticipants[task][i]]);
+	// 			ones[i] = participants[questionParticipants[question][i]];
+	// 			summed_ones += scoreQuestionByParticipant(question, participants[questionParticipants[question][i]]);
 	// 		}
 	// 	}
 
@@ -51,19 +51,19 @@ contract RBTSMechanism is Mechanism {
 	// }
 
 	function scoreParticipant(address participant) returns (uint128 score) {
-		for (uint i = 0; i < answeredTaskIndex[participant].length; i++) {
-			score = MathLib.wadd(score, scoreTaskByParticipant(taskIds[answeredTaskIndex[participant][i] - 1], participant));
+		for (uint i = 0; i < answeredQuestionIndex[participant].length; i++) {
+			score = MathLib.wadd(score, scoreQuestionByParticipant(questionIds[answeredQuestionIndex[participant][i] - 1], participant));
 		}
 	}
 
-	function scoreTaskByParticipant(bytes32 task, address participant) returns (uint128) {
-		require(taskParticipants[task].length >= 3);
+	function scoreQuestionByParticipant(bytes32 question, address participant) returns (uint128) {
+		require(questionParticipants[question].length >= 3);
 
 		// Reference agent index j, peer agent index k
 		require(participantIndex[participant] != 0);
 
-		// require(!mechanism.scored[task][i]);
-		scored[task][participantIndex[participant]] = true;
+		// require(!mechanism.scored[question][i]);
+		scored[question][participantIndex[participant]] = true;
 
 		uint128 j = uint128((participantIndex[participant]+1) % participants.length);
 		if (j == 0) {
@@ -76,13 +76,13 @@ contract RBTSMechanism is Mechanism {
 		}
 
 		// User and reference agent's meta predictions (underlying distribution)
-		uint128 y_i = getMetaPred(participant, task);
-		uint128 y_j = getMetaPred(participants[j], task);
+		uint128 y_i = getMetaPred(participant, question);
+		uint128 y_j = getMetaPred(participants[j], question);
 		uint128 y_iPrime = 0;
 
 		// User and peer agent's binary predictions
-		uint128 x_i = getBinaryPred(participant, task);
-		uint128 x_k = getBinaryPred(participants[k], task);
+		uint128 x_i = getBinaryPred(participant, question);
+		uint128 x_k = getBinaryPred(participants[k], question);
 
 		uint128 delta = MathLib.wmin(y_j, MathLib.wsub(1 ether, y_j));
 
