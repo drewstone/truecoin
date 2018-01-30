@@ -96,4 +96,27 @@ contract('Protocol', (accounts) => {
       assert.equal(res.manager, protocol.address);
     })
   });
+
+  it('should submit a batch of answers to all questions', async function() {
+    const designer = accounts[0];
+    const taskName = 'Financial predictions';
+    const events = [0, 1];
+    const questions = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(l => `Will ${l} go up?`);
+    const questionIndices = [...Array(7).keys()];
+    const timeLength = 1;
+    const predictions = [[0], [1], [0], [1], [0], [1], [0]];
+    
+    let args = [taskName, events, questions, timeLength];
+    let result = await protocol.createTask(...args, { from: designer });
+    assert.equal(result.logs[0].event, 'Creation');
+
+    let submitter = accounts[1];
+    args = [taskName, designer, questions, questionIndices, predictions];
+    result = await protocol.submitBatch(...args, { from: submitter });
+    assert.ok(result);
+    assert.equal(result.logs[0].event, 'BatchSubmission');
+    assert.equal(result.logs[0].args.designer, designer);
+    assert.equal(result.logs[0].args.participant, submitter);
+    assert.equal(web3.toAscii(result.logs[0].args.taskName.toString()).replace(new RegExp('\u0000', 'g'), ''), taskName);
+  });
 });

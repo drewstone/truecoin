@@ -1,7 +1,7 @@
 pragma solidity ^0.4.10;
 
 contract Mechanism {
-    event Submission(address submitter);
+    event Submission(address submitter, bytes32 question, uint128[2] predictions);
 
     address public manager;
     bytes32 public name;
@@ -50,7 +50,7 @@ contract Mechanism {
         Question q = questions[questionIndex];
         q.predictionsOfParticipants.push(predictions);
         q.participants.push(submitter);
-        Submission(submitter);
+        Submission(submitter, question, predictions);
     }
 
     function submitBatch(bytes32[] qs, uint[] questionIndices, uint128[2][] predictions, address submitter) isLive {
