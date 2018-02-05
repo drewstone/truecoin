@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import 'zeppelin/contracts/token/MintableToken.sol';
+import './MintableToken.sol';
 
 /**
  * This contract is TRUECOIN YO
