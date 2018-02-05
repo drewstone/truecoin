@@ -10,9 +10,12 @@ library Database {
         mapping (address => address) designerByTaskMechanism;
         mapping (address => bytes32[]) taskHashesByDesigner;
         mapping (bytes32 => bytes32[]) questionsByTaskHash;
+        mapping (bytes32 => bytes32) descriptionByTaskHash;
+        mapping (bytes32 => bytes32[]) tagsByTaskHash;
+        
     }
 
-    function addTaskMechanism(DB storage self, address taskMechanism, bytes32 taskName, bytes32[] questions) internal {
+    function addTaskMechanism(DB storage self, address taskMechanism, bytes32 taskName, bytes32[] questions, bytes32 description, bytes32[] tags) internal {
         require(self.designerByTaskMechanism[taskMechanism] == address(0));
 
         if (self.taskHashesByDesigner[msg.sender].length == 0) {
@@ -25,5 +28,7 @@ library Database {
         bytes32 taskHash = sha3(msg.sender, taskName);
         self.taskHashesByDesigner[msg.sender].push(taskHash);
         self.questionsByTaskHash[taskHash] = questions;
+        self.descriptionByTaskHash[taskHash] = description;
+        self.tagsByTaskHash[taskHash] = tags;
     }
 }

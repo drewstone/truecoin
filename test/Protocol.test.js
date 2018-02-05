@@ -11,14 +11,16 @@ contract('Protocol', (accounts) => {
 
   it('should initialize a protocol and create a task', async function() {
     const taskName = 'Test';
-    const events = [0, 1];
+    const events = ['up', 'down'];
     const questions = ['will AAPL go up?'];
     const timeLength = 1;
+    const description = 'Test Description';
+    const tags = ['Finance'];
 
     let result = await protocol.owner.call();
     assert.equal(result.toString(), accounts[0]);
     
-    const args = [taskName, events, questions, timeLength];
+    const args = [taskName, events, questions, timeLength, description, tags];
     result = await protocol.createTask.call(...args, { from: accounts[0] });
     assert.ok(result);
     result = await protocol.createTask(...args, { from: accounts[0] });
@@ -33,11 +35,13 @@ contract('Protocol', (accounts) => {
   it('should submit many answers', async function() {
     const designer = accounts[0];
     const taskName = 'Test';
-    const events = [0, 1];
+    const events = ['up', 'down'];
     const questions = ['will AAPL go up?'];
     const timeLength = 1;
+    const description = 'Test Description';
+    const tags = ['Finance'];
 
-    let args = [taskName, events, questions, timeLength];
+    let args = [taskName, events, questions, timeLength, description, tags];
     await protocol.createTask(...args, { from: accounts[0] });
 
     let submitArgs = [taskName, designer, questions[0], 0, [1]]
@@ -59,11 +63,13 @@ contract('Protocol', (accounts) => {
   it('should create many questions and fetch all task designers', async function() {
     const designers = accounts;
     const taskName = 'Test';
-    const events = [0, 1];
+    const events = ['up', 'down'];
     const questions = ['will AAPL go up?'];
     const timeLength = 1;
+    const description = 'Test Description';
+    const tags = ['Finance'];
 
-    let args = [taskName, events, questions, timeLength];
+    let args = [taskName, events, questions, timeLength, description, tags];
     let promises = designers.map(designer => {
       return protocol.createTask(...args, { from: designer });
     });
@@ -100,13 +106,15 @@ contract('Protocol', (accounts) => {
   it('should submit a batch of answers to all questions', async function() {
     const designer = accounts[0];
     const taskName = 'Financial predictions';
-    const events = [0, 1];
+    const description = 'Test Description';
+    const tags = ['Finance'];
+    const events = ['up', 'down'];
     const questions = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(l => `Will ${l} go up?`);
     const questionIndices = [...Array(7).keys()];
     const timeLength = 1;
     const predictions = [[0], [1], [0], [1], [0], [1], [0]];
-    
-    let args = [taskName, events, questions, timeLength];
+
+    let args = [taskName, events, questions, timeLength, description, tags];
     let result = await protocol.createTask(...args, { from: designer });
     assert.equal(result.logs[0].event, 'Creation');
 

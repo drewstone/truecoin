@@ -5,10 +5,11 @@ contract Mechanism {
 
     address public manager;
     bytes32 public name;
+    bytes32 public description;
+    bytes32[] public tags;
 
     address[] public participants;
-    uint8[] public events;
-    uint256 public timeLength;
+    bytes32[] public events;
     uint256 public initiationTime;
     uint256 public terminationTime;
 
@@ -27,10 +28,13 @@ contract Mechanism {
     mapping (address => uint128[]) public participantsQuestions;
     mapping (address => mapping (uint => uint)) hasAnsweredQuestion;
 
-    function Mechanism(uint8[] _events, bytes32[] _questions, uint128 _length, bytes32 _name) {
+    function Mechanism(bytes32[] _events, bytes32[] _questions, uint128 _length, bytes32 _name, bytes32 _description, bytes32[] _tags) {
         require(initiationTime == 0);
         events = _events;
         name = _name;
+        description = _description;
+        tags = _tags;
+
         initiationTime = now;
         terminationTime = initiationTime + (_length * 1 days);
         manager = msg.sender;
@@ -47,7 +51,7 @@ contract Mechanism {
         require(msg.sender == manager || msg.sender == submitter);
         hasAnsweredQuestion[submitter][questionIndex] = 1;
 
-        Question q = questions[questionIndex];
+        Question storage q = questions[questionIndex];
         q.predictionsOfParticipants.push(predictions);
         q.participants.push(submitter);
         Submission(submitter, question, predictions);
@@ -61,6 +65,11 @@ contract Mechanism {
         }
     }
 
+    function getQuestion(uint questionIndex) constant returns (bytes32, address[], uint128[2][]) {
+        Question memory q = questions[questionIndex];
+        return (q.data, q.participants, q.predictionsOfParticipants);
+    }
+
     function getQuestions() constant returns (bytes32[] qs) {
         qs = new bytes32[](questions.length);
         for (uint i = 0; i < questions.length; i++) {
@@ -69,7 +78,7 @@ contract Mechanism {
     }
 
     function getAnswers(uint questionIndex) constant returns (uint128[]) {
-        Question q = questions[questionIndex];
+        Question memory q = questions[questionIndex];
         uint128[] memory answers = new uint128[](q.participants.length);
         for (uint i = 0; i < answers.length; i++) {
             answers[i] = q.predictionsOfParticipants[i][0];
@@ -78,14 +87,22 @@ contract Mechanism {
         return answers;
     }
 
+    function getParticipants() constant returns (address[]) {
+        return participants;
+    }
+
+    function getEvents() constant returns (bytes32[]) {
+        return events;
+    }
+
     modifier isManager() { 
         require(msg.sender == manager);
         _;
     }
 
     modifier isLive() { 
-            require(now <= terminationTime);
-            _; 
-        }
+        require(now <= terminationTime);
+        _; 
+    }
             
 }

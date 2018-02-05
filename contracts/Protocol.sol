@@ -14,7 +14,7 @@ contract Protocol {
     address public owner;
 
     event Initialized(address mechanismManager);
-    event Creation(address designer, bytes32 taskName, address mechContract, uint time);
+    event Creation(address designer, bytes32 taskName, address mechContract, uint time, bytes32 description, bytes32[] tags);
     event Submission(address designer, address participant, bytes32 taskName, uint128[2] predictions, address mech);
     event BatchSubmission(address designer, address participant, bytes32 taskName, uint128[2][] predictions, address mech);
     
@@ -46,12 +46,12 @@ contract Protocol {
         return true;
     }
 
-    function createTask(bytes32 taskName, uint8[] events, bytes32[] questions, uint128 length) returns (bool) {
+    function createTask(bytes32 taskName, bytes32[] events, bytes32[] questions, uint128 length, bytes32 description, bytes32[] tags) returns (bool) {
         require(mechanismIndex[sha3(msg.sender, taskName)] == address(0));
-        address mech = new Mechanism(events, questions, length, taskName);
+        address mech = new Mechanism(events, questions, length, taskName, description, tags);
         mechanismIndex[sha3(msg.sender, taskName)] = mech;
-        db.addTaskMechanism(mech, taskName, questions);
-        Creation(msg.sender, taskName, mech, length);
+        db.addTaskMechanism(mech, taskName, questions, description, tags);
+        Creation(msg.sender, taskName, mech, length, description, tags);
         return true;
     }
 

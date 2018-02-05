@@ -3,13 +3,15 @@ const Mechanism = artifacts.require('./Mechanism');
 
 contract('Mechanism', (accounts) => {
   let mechanism;
-  const events = [0, 1];
+  const events = ['up', 'down'];
   const questions = ['will AAPL go up?'];
   const timeLength = 1;
   const name = 'Test';
+  const description = 'Test Description';
+  const tags = ['Finance'];
 
   beforeEach(async function() {
-    mechanism = await Mechanism.new(events, questions, timeLength, name);
+    mechanism = await Mechanism.new(events, questions, timeLength, name, description, tags);
   });
 
   it('should initialize a mechanism', async function() {
