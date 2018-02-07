@@ -1,6 +1,5 @@
 pragma solidity ^0.4.10;
 
-import './Scorer.sol';
 import './Mechanism.sol';
 import './Database.sol';
 import './Math.sol';
