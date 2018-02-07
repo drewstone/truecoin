@@ -127,4 +127,39 @@ contract('Protocol', (accounts) => {
     assert.equal(result.logs[0].args.participant, submitter);
     assert.equal(web3.toAscii(result.logs[0].args.taskName.toString()).replace(new RegExp('\u0000', 'g'), ''), taskName);
   });
+
+  it('should score a task with answers to all questions', async function() {
+    const designer = accounts[0];
+    const taskName = 'Financial predictions';
+    const description = 'Test Description';
+    const tags = ['Finance'];
+    const events = ['up', 'down'];
+    const questions = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(l => `Will ${l} go up?`);
+    const questionIndices = [...Array(7).keys()];
+    const timeLength = 100;
+
+
+    const predictions1 = [[0], [1], [0], [1], [0], [1], [0]];
+    const predictions2 = [[1], [1], [0], [1], [0], [0], [1]];
+    const predictions3 = [[0], [1], [0], [0], [1], [1], [0]];
+
+    let args = [taskName, events, questions, timeLength, description, tags];
+    let result = await protocol.createTask(...args, { from: designer });
+    assert.equal(result.logs[0].event, 'Creation');
+
+    let submitter1 = accounts[1];
+    let submitter2 = accounts[2];
+    let submitter3 = accounts[3];
+
+    args1 = [taskName, designer, questions, questionIndices, predictions1];
+    args2 = [taskName, designer, questions, questionIndices, predictions2];
+    args3 = [taskName, designer, questions, questionIndices, predictions3];
+    await protocol.submitBatch(...args1, { from: submitter1 });
+    await protocol.submitBatch(...args2, { from: submitter2 });
+    await protocol.submitBatch(...args3, { from: submitter3 });
+
+    result = await protocol.scoreTaskRBTS(taskName, designer);
+        assert.equal(result.logs[0].event, 'ScoreTask');
+
+  });
 });

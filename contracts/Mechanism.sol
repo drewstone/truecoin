@@ -15,7 +15,7 @@ contract Mechanism {
 
     struct Question {
         bytes32 data;
-        address[] participants;
+        uint[] participantIndices;
         uint128[2][] predictionsOfParticipants;
     }
 
@@ -23,9 +23,11 @@ contract Mechanism {
 
     // Participants that have answered a specific question
     mapping (bytes32 => uint128[]) public participantsOfQuestion;
+    mapping (address => uint) participantsIndex;
+    
 
     // questions answered by specific participant
-    mapping (address => uint128[]) public participantsQuestions;
+    mapping (address => uint128[]) public questionsOfParticipant;
     mapping (address => mapping (uint => uint)) hasAnsweredQuestion;
 
     function Mechanism(bytes32[] _events, bytes32[] _questions, uint128 _length, bytes32 _name, bytes32 _description, bytes32[] _tags) {
@@ -38,6 +40,7 @@ contract Mechanism {
         initiationTime = now;
         terminationTime = initiationTime + (_length * 1 days);
         manager = msg.sender;
+        participants.length++;
 
         for (uint i = 0; i < _questions.length; i++) {
             questions.length++;
@@ -51,9 +54,17 @@ contract Mechanism {
         require(msg.sender == manager || msg.sender == submitter);
         hasAnsweredQuestion[submitter][questionIndex] = 1;
 
+        if (participantsIndex[submitter] == 0) {
+            participants[participants.length - 1] = submitter;
+            participantsIndex[submitter] = participants.length - 1;
+            participants.length++;
+        }
+
         Question storage q = questions[questionIndex];
         q.predictionsOfParticipants.push(predictions);
-        q.participants.push(submitter);
+        q.participantIndices.push(participantsIndex[submitter]);
+
+        
         Submission(submitter, question, predictions);
     }
 
@@ -67,7 +78,12 @@ contract Mechanism {
 
     function getQuestion(uint questionIndex) constant returns (bytes32, address[], uint128[2][]) {
         Question memory q = questions[questionIndex];
-        return (q.data, q.participants, q.predictionsOfParticipants);
+        address[] memory ps = new address[](q.participantIndices.length);
+        for (uint i = 0; i < ps.length; i++) {
+            ps[i] = participants[q.participantIndices[i]];
+        }
+
+        return (q.data, ps, q.predictionsOfParticipants);
     }
 
     function getQuestions() constant returns (bytes32[] qs) {
@@ -77,14 +93,47 @@ contract Mechanism {
         }
     }
 
-    function getAnswers(uint questionIndex) constant returns (uint128[]) {
+    function getAnswers(uint questionIndex) constant returns (uint128[2][]) {
         Question memory q = questions[questionIndex];
-        uint128[] memory answers = new uint128[](q.participants.length);
+        uint128[2][] memory answers = new uint128[2][](q.participantIndices.length);
         for (uint i = 0; i < answers.length; i++) {
-            answers[i] = q.predictionsOfParticipants[i][0];
+            answers[i] = q.predictionsOfParticipants[i];
         }
 
         return answers;
+    }
+
+    function getParticipantCount() returns (uint) {
+        return participants.length - 1;
+    }
+
+    function getQuestionCount() constant returns (uint) {
+        return questions.length;
+    }
+
+    function getParticipantCountOfQuestion(uint questionIndex) constant returns (uint) {
+        Question memory q = questions[questionIndex];
+        return q.participantIndices.length;
+    }
+
+    function getParticipantPredictionOfQuestion(uint questionIndex, uint participantIndex) constant returns (uint128[2]) {
+        Question memory q = questions[questionIndex];
+        return q.predictionsOfParticipants[participantIndex];
+    }
+
+    function getParticipantIndexFromQuestion(uint questionIndex, uint participantIndex) constant returns (uint) {
+        Question memory q = questions[questionIndex];
+        return q.participantIndices[participantIndex];
+    }
+
+    function getParticipantsOfQuestion(uint questionIndex) constant returns (uint[]) {
+        Question memory q = questions[questionIndex];
+        return q.participantIndices;
+    }
+
+    function getPredictionsOfQuestion(uint questionIndex) constant returns (uint128[2][]) {
+        Question memory q = questions[questionIndex];
+        return q.predictionsOfParticipants;
     }
 
     function getParticipants() constant returns (address[]) {
