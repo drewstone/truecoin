@@ -78,60 +78,6 @@ contract Protocol {
      *                           SCORING FUNCTIONS
      */
 
-    function scoreTaskENDG(bytes32 taskName, address designer) returns(uint128[] scores) {
-        require(mechanismIndex[sha3(designer, taskName)] != address(0));
-        require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
-
-        address taskAddress = mechanismIndex[sha3(designer, taskName)];
-        // require(Mechanism(mech).terminationTime() < now);
-        scores = new uint128[](Mechanism(taskAddress).getParticipantCount());
-        for (uint i = 0; i < scores.length; i++) {
-            uint count = 1;
-            address[] memory p1Distinct;
-            address[] memory p2Distinct;
-
-            while (distinct.length < 1) {
-                require(count < scores.length);
-                var (p1Distinct, p2Distinct) = db.getDistinctTasks(
-                    Mechanism(taskAddress).getParticipants()[i],
-                    Mechanism(taskAddress).getParticipants()[i + count % scores.length]);
-                count += 1;
-            }
-
-            for (uint j = 0; j < p1Distinct.length; j++) {
-
-            }
-
-            for (j = 0; j < p2Distinct.length; j++) {
-                
-            }
-        }
-    }
-     
-    function scoreAij(uint128 p, uint128 r) internal constant returns (uint128) {
-        // require((p == 0 || p == 1) && (r == 0 || r == 1));
-        uint128 first = p * r;
-        uint128 second = (1 - p) * (1 - r);
-        uint128 score = 1.0 ether * (first + second);
-        return score;
-    }
-
-    function scoreBij(uint128[] ps, uint128[] rs) internal constant returns (uint128) {
-        require(ps.length == rs.length);
-
-        uint128 d = Math.cast(ps.length * 1.0 ether);
-        uint128 p_sum = Math.cast(Math.sum(ps) * 1.0 ether);
-        uint128 r_sum = Math.cast(Math.sum(rs) * 1.0 ether);
-
-        uint128 first = Math.wdiv(p_sum, d);
-        uint128 second = Math.wdiv(r_sum, d);
-
-        uint128 left = Math.wmul(first, second);
-        uint128 right = Math.wmul(Math.wsub(1.0 ether, first), Math.wsub(1.0 ether, second));
-        return Math.wadd(left, right);
-    }
-
-
     function scoreTaskRBTS(bytes32 taskName, address designer) returns (uint128[] scores) {
         require(mechanismIndex[sha3(designer, taskName)] != address(0));
         require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
