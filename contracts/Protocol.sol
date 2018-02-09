@@ -1,8 +1,8 @@
 pragma solidity ^0.4.10;
 
+import './Math.sol';
 import './Mechanism.sol';
 import './Database.sol';
-import './Math.sol';
 
 /**
  * This contract handles the Truecoin protocol
@@ -20,6 +20,7 @@ contract Protocol {
     event ScoreTask(bytes32 taskName, address designer, uint128[] scores);
 
     mapping (bytes32 => address) public mechanismIndex;
+    mapping (address => bool) public hasBeenScored;
 
     function Protocol() {
         owner = msg.sender;
@@ -28,6 +29,14 @@ contract Protocol {
     function destroyOwner() onlyOwner {
         owner = this;
     }
+
+    /**
+     *                           ADMIN FUNCTIONS
+     *
+     * -----------------------------------------------------------------------
+     * 
+     *                           MARKET FUNCTIONS
+     */
 
     function submitQuestion(bytes32 taskName, address designer, bytes32 question, uint questionIndex, uint128[2] predictions) returns (bool) {
         require(mechanismIndex[sha3(designer, taskName)] != address(0));
@@ -46,6 +55,8 @@ contract Protocol {
         mech.submitBatch(questions, questionIndices, predictions, msg.sender);
 
         BatchSubmission(designer, msg.sender, taskName, predictions, mech);
+
+        answeredTasksByParticipant[msg.sender].push(address(mech));
         return true;
     }
 
@@ -59,61 +70,116 @@ contract Protocol {
         return true;
     }
 
-    function scoreTaskRBTS(bytes32 taskName) returns (bool) {
-        require(mechanismIndex[sha3(msg.sender, taskName)] != address(0));
-        
-        address mech = mechanismIndex[sha3(msg.sender, taskName)];
+    /**
+     *                           MARKET FUNCTIONS
+     *
+     * -----------------------------------------------------------------------
+     * 
+     *                           SCORING FUNCTIONS
+     */
+
+    function scoreTaskENDG(bytes32 taskName, address designer) returns(uint128[] scores) {
+        require(mechanismIndex[sha3(designer, taskName)] != address(0));
+        require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
+
+        address taskAddress = mechanismIndex[sha3(designer, taskName)];
         // require(Mechanism(mech).terminationTime() < now);
+        scores = new uint128[](Mechanism(taskAddress).getParticipantCount());
+        for (uint i = 0; i < scores.length; i++) {
+            uint count = 1;
+            address[] memory p1Distinct;
+            address[] memory p2Distinct;
 
-        uint128[] memory scores = new uint128[](Mechanism(mech).getParticipantCount());
-        for (uint l = 0; l < Mechanism(mech).getQuestionCount(); l++) {
-            for (uint i = 0; i < Mechanism(mech).getParticipantCountOfQuestion(l); i++) {
+            while (distinct.length < 1) {
+                require(count < scores.length);
+                var (p1Distinct, p2Distinct) = db.getDistinctTasks(
+                    Mechanism(taskAddress).getParticipants()[i],
+                    Mechanism(taskAddress).getParticipants()[i + count % scores.length]);
+                count += 1;
+            }
+
+            for (uint j = 0; j < p1Distinct.length; j++) {
+
+            }
+
+            for (j = 0; j < p2Distinct.length; j++) {
                 
-                // User and reference agent's meta predictions (underlying distribution)
-                uint128 y_i = uint128(Mechanism(mech).getParticipantPredictionOfQuestion(l, i)[1]);
-                uint128 y_j = uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
-                    l,
-                    uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
-                )[1]);
+            }
+        }
+    }
+     
+    function scoreAij(uint128 p, uint128 r) internal constant returns (uint128) {
+        // require((p == 0 || p == 1) && (r == 0 || r == 1));
+        uint128 first = p * r;
+        uint128 second = (1 - p) * (1 - r);
+        uint128 score = 1.0 ether * (first + second);
+        return score;
+    }
 
+    function scoreBij(uint128[] ps, uint128[] rs) internal constant returns (uint128) {
+        require(ps.length == rs.length);
+
+        uint128 d = Math.cast(ps.length * 1.0 ether);
+        uint128 p_sum = Math.cast(Math.sum(ps) * 1.0 ether);
+        uint128 r_sum = Math.cast(Math.sum(rs) * 1.0 ether);
+
+        uint128 first = Math.wdiv(p_sum, d);
+        uint128 second = Math.wdiv(r_sum, d);
+
+        uint128 left = Math.wmul(first, second);
+        uint128 right = Math.wmul(Math.wsub(1.0 ether, first), Math.wsub(1.0 ether, second));
+        return Math.wadd(left, right);
+    }
+
+
+    function scoreTaskRBTS(bytes32 taskName, address designer) returns (uint128[] scores) {
+        require(mechanismIndex[sha3(designer, taskName)] != address(0));
+        require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
+        
+        address taskAddress = mechanismIndex[sha3(designer, taskName)];
+        // require(Mechanism(mech).terminationTime() < now);
+        scores = new uint128[](Mechanism(taskAddress).getParticipantCount());
+
+        for (uint l = 0; l < Mechanism(taskAddress).getQuestionCount(); l++) {
+            for (uint i = 0; i < Mechanism(taskAddress).getParticipantCountOfQuestion(l); i++) {
                 uint128 y_iPrime;
 
-                if (Mechanism(mech).getParticipantPredictionOfQuestion(l, i)[0] == 1) {
+                if (Mechanism(taskAddress).getParticipantPredictionOfQuestion(l, i)[0] == 1) {
                     y_iPrime = Math.wadd(
-                        uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                             l,
-                            uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                            uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                         )[1]),
                         Math.wmin(
-                            uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                            uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                                 l,
-                                uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                                uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                             )[1]),
                             Math.wsub(
                                 1 ether,
-                                uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                                uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                                     l,
-                                    uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                                    uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                                 )[1])
                             )
                         )
                     );
                 } else {
                     y_iPrime = Math.wsub(
-                        uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                             l,
-                            uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                            uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                         )[1]),
                         Math.wmin(
-                            uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                            uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                                 l,
-                                uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                                uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                             )[1]),
                             Math.wsub(
                                 1 ether,
-                                uint128(Mechanism(mech).getParticipantPredictionOfQuestion(
+                                uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                                     l,
-                                    uint128((i+1) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                                    uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                                 )[1])
                             )
                         )
@@ -121,26 +187,27 @@ contract Protocol {
                 }
 
                 // User's utility is sum of information and prediction scores
-                scores[Mechanism(mech).getParticipantIndexFromQuestion(l, i)] += Math.wadd(
+                scores[Mechanism(taskAddress).getParticipantIndexFromQuestion(l, i)] += Math.wadd(
                     quadraticScoring(
-                        Mechanism(mech).getParticipantPredictionOfQuestion(
+                        Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                             l,
-                            uint128((i+2) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                            uint128((i+2) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                         )[0],
                         y_iPrime
                     ),
                     quadraticScoring(
-                        Mechanism(mech).getParticipantPredictionOfQuestion(
+                        Mechanism(taskAddress).getParticipantPredictionOfQuestion(
                             l,
-                            uint128((i+2) % Mechanism(mech).getParticipantCountOfQuestion(l))
+                            uint128((i+2) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
                         )[0],
-                        uint128(Mechanism(mech).getParticipantPredictionOfQuestion(l, i)[1]))
+                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(l, i)[1]))
                     );
             }
         }
 
-        ScoreTask(taskName, msg.sender, scores);
-        return true;
+        ScoreTask(taskName, designer, scores);
+        hasBeenScored[taskAddress] = true;
+        return scores;
     }
 
     function quadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
@@ -152,6 +219,8 @@ contract Protocol {
     }
 
     /**
+     *                           SCORING FUNCTIONS
+     *
      * -----------------------------------------------------------------------
      * 
      *                           CONSTANT FUNCTIONS
@@ -187,6 +256,8 @@ contract Protocol {
     }
     
     /**
+     *                           CONSTANT FUNCTIONS
+     *
      * -----------------------------------------------------------------------
      */
 }

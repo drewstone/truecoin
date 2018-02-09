@@ -138,7 +138,6 @@ contract('Protocol', (accounts) => {
     const questionIndices = [...Array(7).keys()];
     const timeLength = 100;
 
-
     const predictions1 = [[0], [1], [0], [1], [0], [1], [0]];
     const predictions2 = [[1], [1], [0], [1], [0], [0], [1]];
     const predictions3 = [[0], [1], [0], [0], [1], [1], [0]];
@@ -159,7 +158,6 @@ contract('Protocol', (accounts) => {
     await protocol.submitBatch(...args3, { from: submitter3 });
 
     result = await protocol.scoreTaskRBTS(taskName, designer);
-        assert.equal(result.logs[0].event, 'ScoreTask');
-
+    assert.equal(result.logs[0].event, 'ScoreTask');
   });
 });

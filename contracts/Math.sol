@@ -32,6 +32,7 @@ library Math {
     function min(uint256 x, uint256 y) internal constant returns (uint256 z) {
         return x <= y ? x : y;
     }
+
     function max(uint256 x, uint256 y) internal constant returns (uint256 z) {
         return x >= y ? x : y;
     }
