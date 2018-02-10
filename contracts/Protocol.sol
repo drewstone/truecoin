@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import './Math.sol';
+import './Scorer.sol';
 import './Mechanism.sol';
 import './Database.sol';
 import './Truecoin.sol';
@@ -84,6 +84,19 @@ contract Protocol {
      *                           SCORING FUNCTIONS
      */
 
+     function mintForTask(bytes32 scoreType, address taskAddr) {
+        Scorer scorer;
+        if (scoreType == bytes32("rbts")) {
+            scorer = Scorer(rbts);
+        }
+
+        for (uint i = 0; i < Mechanism(taskAddr).getParticipantCount(); i++) {
+            Truecoin(truecoin).mint(
+                Mechanism(taskAddr).getParticipant(i),
+                scorer.getScoreOfParticipant(taskAddr, i));
+        }
+     }
+
      function setScoringContract(bytes32 scoreType, address scoringContract) onlyOwner returns (bool) {
         if (scoreType == bytes32("rbts")) {
             rbts = scoringContract;
@@ -98,7 +111,7 @@ contract Protocol {
         return true;
      }
 
-     function isScored(bytes32 taskName, address designer) returns (bool) {
+     function score(bytes32 taskName, address designer) returns (bool) {
         hasBeenScored[mechanismIndex[sha3(designer, taskName)]] = true;
         return true;
      }

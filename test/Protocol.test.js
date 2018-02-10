@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const Protocol = artifacts.require('./Protocol');
 const Mechanism = artifacts.require('./Mechanism');
 const RBTS = artifacts.require('./RBTS');
+const Truecoin = artifacts.require('./Truecoin');
 
 contract('Protocol', (accounts) => {
   let protocol;
@@ -145,6 +146,7 @@ contract('Protocol', (accounts) => {
 
     let args = [taskName, events, questions, timeLength, description, tags];
     let result = await protocol.createTask(...args, { from: designer });
+    const task = await Mechanism.at(result.logs[0].args.mechContract);
     assert.equal(result.logs[0].event, 'Creation');
 
     let submitter1 = accounts[1];
@@ -159,9 +161,17 @@ contract('Protocol', (accounts) => {
     await protocol.submitBatch(...args3, { from: submitter3 });
 
     const rbts = await RBTS.new(protocol.address);
+    const truecoin = await Truecoin.new(0);
 
+    await protocol.setTruecoinContract(truecoin.address);
+    await truecoin.transferOwnership(protocol.address);
     await protocol.setScoringContract("rbts", rbts.address);
+
+    result = await task.getParticipants.call();
     result = await rbts.score(taskName, designer);
     assert.equal(result.logs[0].event, 'ScoreTask');
+
+    result = await protocol.mintForTask("rbts", task.address);
+    assert.equal(result.receipt.logs.length, 3);
   });
 });

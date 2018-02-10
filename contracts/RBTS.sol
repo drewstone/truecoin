@@ -3,12 +3,12 @@ pragma solidity ^0.4.13;
 import './Math.sol';
 import './Mechanism.sol';
 import './Protocol.sol';
-import './Truecoin.sol';
+import './Scorer.sol';
 
 /**
  * The RBTS contract
  */
-contract RBTS {
+contract RBTS is Scorer {
     address public protocol;
 
     event ScoreTask(bytes32 taskName, address designer, uint128[] scores);
@@ -22,7 +22,7 @@ contract RBTS {
 
         // require(Mechanism(mech).terminationTime() < now);
         Mechanism taskAddr = Mechanism(Protocol(protocol).getTask(taskName, designer));
-        scores = new uint128[](taskAddr.getParticipantCount());
+        scoreMap[taskAddr] = new uint128[](taskAddr.getParticipantCount());
 
         for (uint l = 0; l < taskAddr.getQuestionCount(); l++) {
             for (uint i = 0; i < taskAddr.getParticipantCountOfQuestion(l); i++) {
@@ -71,7 +71,7 @@ contract RBTS {
                 }
 
                 // User's utility is sum of information and prediction scores
-                scores[taskAddr.getParticipantIndexFromQuestion(l, i)] += Math.wadd(
+                scoreMap[taskAddr][taskAddr.getParticipantIndexFromQuestion(l, i) - 1] += Math.wadd(
                     quadraticScoring(
                         taskAddr.getParticipantPredictionOfQuestion(
                             l,
@@ -89,8 +89,8 @@ contract RBTS {
             }
         }
 
-        ScoreTask(taskName, designer, scores);
-        Protocol(protocol).isScored(taskName, designer);
+        ScoreTask(taskName, designer, scoreMap[taskAddr]);
+        Protocol(protocol).score(taskName, designer);
         return scores;
     }
 

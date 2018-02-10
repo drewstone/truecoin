@@ -60,9 +60,8 @@ contract Mechanism {
         hasAnsweredQuestion[submitter][questionIndex] = 1;
 
         if (participantsIndex[submitter] == 0) {
-            participants[participants.length - 1] = submitter;
-            participantsIndex[submitter] = participants.length - 1;
-            participants.length++;
+            participantsIndex[submitter] = participants.length;
+            participants.push(submitter);
         }
 
         Question storage q = questions[questionIndex];
@@ -146,8 +145,17 @@ contract Mechanism {
         return q.predictionsOfParticipants;
     }
 
+    function getParticipant(uint participantIndex) constant returns (address) {
+        return participants[participantIndex];
+    }
+
     function getParticipants() constant returns (address[]) {
-        return participants;
+        address[] memory ps = new address[](participants.length - 1);
+        for (uint i = 0; i < ps.length; i++) {
+            ps[i] = participants[i+1];
+        }
+
+        return ps;
     }
 
     function getEvents() constant returns (bytes32[]) {
