@@ -13,6 +13,9 @@ contract Mechanism {
     uint256 public initiationTime;
     uint256 public terminationTime;
 
+    uint128[] totalAnswersByOption;
+    uint128 totalAnswers;
+
     struct Question {
         bytes32 data;
         uint[] participantIndices;
@@ -36,6 +39,8 @@ contract Mechanism {
         name = _name;
         description = _description;
         tags = _tags;
+
+        totalAnswersByOption = new uint128[](_events.length);
 
         initiationTime = now;
         terminationTime = initiationTime + (_length * 1 days);
@@ -64,7 +69,8 @@ contract Mechanism {
         q.predictionsOfParticipants.push(predictions);
         q.participantIndices.push(participantsIndex[submitter]);
 
-        
+        totalAnswers += 1;
+        totalAnswersByOption[predictions[0]] += 1;
         Submission(submitter, question, predictions);
     }
 
@@ -111,14 +117,18 @@ contract Mechanism {
         return questions.length;
     }
 
+    function getAnswerQuestionCountOfParticipant(uint participantIndex) constant returns (uint) {
+        return questionsOfParticipant[participants[participantIndex]].length;
+    }
+
     function getParticipantCountOfQuestion(uint questionIndex) constant returns (uint) {
         Question memory q = questions[questionIndex];
         return q.participantIndices.length;
     }
 
-    function getParticipantPredictionOfQuestion(uint questionIndex, uint participantIndex) constant returns (uint128[2]) {
+    function getParticipantPredictionOfQuestion(uint questionIndex, uint participantIndexInQuestion) constant returns (uint128[2]) {
         Question memory q = questions[questionIndex];
-        return q.predictionsOfParticipants[participantIndex];
+        return q.predictionsOfParticipants[participantIndexInQuestion];
     }
 
     function getParticipantIndexFromQuestion(uint questionIndex, uint participantIndex) constant returns (uint) {

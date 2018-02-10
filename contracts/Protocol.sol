@@ -3,6 +3,7 @@ pragma solidity ^0.4.10;
 import './Math.sol';
 import './Mechanism.sol';
 import './Database.sol';
+import './Truecoin.sol';
 
 /**
  * This contract handles the Truecoin protocol
@@ -12,12 +13,13 @@ contract Protocol {
     Database.DB db;
 
     address public owner;
+    address public truecoin;
+    address public rbts;
 
     event Initialized(address mechanismManager);
     event Creation(address designer, bytes32 taskName, address mechContract, uint time, bytes32 description, bytes32[] tags);
     event Submission(address designer, address participant, bytes32 taskName, uint128[2] predictions, address mech);
     event BatchSubmission(address designer, address participant, bytes32 taskName, uint128[2][] predictions, address mech);
-    event ScoreTask(bytes32 taskName, address designer, uint128[] scores);
 
     mapping (bytes32 => address) public mechanismIndex;
     mapping (address => bool) public hasBeenScored;
@@ -29,6 +31,10 @@ contract Protocol {
     function destroyOwner() onlyOwner {
         owner = this;
     }
+
+    function setTruecoinContract(address trcContract) onlyOwner returns (bool) {
+        truecoin = trcContract;
+     }
 
     /**
      *                           ADMIN FUNCTIONS
@@ -56,7 +62,7 @@ contract Protocol {
 
         BatchSubmission(designer, msg.sender, taskName, predictions, mech);
 
-        answeredTasksByParticipant[msg.sender].push(address(mech));
+        db.answeredTasksByParticipant[msg.sender].push(address(mech));
         return true;
     }
 
@@ -78,91 +84,25 @@ contract Protocol {
      *                           SCORING FUNCTIONS
      */
 
-    function scoreTaskRBTS(bytes32 taskName, address designer) returns (uint128[] scores) {
+     function setScoringContract(bytes32 scoreType, address scoringContract) onlyOwner returns (bool) {
+        if (scoreType == bytes32("rbts")) {
+            rbts = scoringContract;
+        }
+
+        return true;
+     }
+
+     function isValidTask(bytes32 taskName, address designer) returns (bool) {
         require(mechanismIndex[sha3(designer, taskName)] != address(0));
         require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
-        
-        address taskAddress = mechanismIndex[sha3(designer, taskName)];
-        // require(Mechanism(mech).terminationTime() < now);
-        scores = new uint128[](Mechanism(taskAddress).getParticipantCount());
+        return true;
+     }
 
-        for (uint l = 0; l < Mechanism(taskAddress).getQuestionCount(); l++) {
-            for (uint i = 0; i < Mechanism(taskAddress).getParticipantCountOfQuestion(l); i++) {
-                uint128 y_iPrime;
-
-                if (Mechanism(taskAddress).getParticipantPredictionOfQuestion(l, i)[0] == 1) {
-                    y_iPrime = Math.wadd(
-                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                            l,
-                            uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                        )[1]),
-                        Math.wmin(
-                            uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                                l,
-                                uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                            )[1]),
-                            Math.wsub(
-                                1 ether,
-                                uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                                    l,
-                                    uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                                )[1])
-                            )
-                        )
-                    );
-                } else {
-                    y_iPrime = Math.wsub(
-                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                            l,
-                            uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                        )[1]),
-                        Math.wmin(
-                            uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                                l,
-                                uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                            )[1]),
-                            Math.wsub(
-                                1 ether,
-                                uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                                    l,
-                                    uint128((i+1) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                                )[1])
-                            )
-                        )
-                    );
-                }
-
-                // User's utility is sum of information and prediction scores
-                scores[Mechanism(taskAddress).getParticipantIndexFromQuestion(l, i)] += Math.wadd(
-                    quadraticScoring(
-                        Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                            l,
-                            uint128((i+2) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                        )[0],
-                        y_iPrime
-                    ),
-                    quadraticScoring(
-                        Mechanism(taskAddress).getParticipantPredictionOfQuestion(
-                            l,
-                            uint128((i+2) % Mechanism(taskAddress).getParticipantCountOfQuestion(l))
-                        )[0],
-                        uint128(Mechanism(taskAddress).getParticipantPredictionOfQuestion(l, i)[1]))
-                    );
-            }
-        }
-
-        ScoreTask(taskName, designer, scores);
-        hasBeenScored[taskAddress] = true;
-        return scores;
-    }
-
-    function quadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
-        if (i == 1) {
-            return Math.wsub(Math.wmul(2 * 1 ether, p), Math.wmul(p, p));
-        } else {
-            return Math.wsub(1 ether, Math.wmul(p, p));
-        }
-    }
+     function isScored(bytes32 taskName, address designer) returns (bool) {
+        hasBeenScored[mechanismIndex[sha3(designer, taskName)]] = true;
+        return true;
+     }
+     
 
     /**
      *                           SCORING FUNCTIONS

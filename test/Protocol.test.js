@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const Protocol = artifacts.require('./Protocol');
 const Mechanism = artifacts.require('./Mechanism');
+const RBTS = artifacts.require('./RBTS');
 
 contract('Protocol', (accounts) => {
   let protocol;
@@ -157,7 +158,10 @@ contract('Protocol', (accounts) => {
     await protocol.submitBatch(...args2, { from: submitter2 });
     await protocol.submitBatch(...args3, { from: submitter3 });
 
-    result = await protocol.scoreTaskRBTS(taskName, designer);
+    const rbts = await RBTS.new(protocol.address);
+
+    await protocol.setScoringContract("rbts", rbts.address);
+    result = await rbts.score(taskName, designer);
     assert.equal(result.logs[0].event, 'ScoreTask');
   });
 });
