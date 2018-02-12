@@ -149,7 +149,7 @@ contract Protocol {
         return db.tasks.length;
     }
 
-    modifier onlyOwner() { 
+    modifier onlyOwner() {
         require(msg.sender == owner);
         _; 
     }
