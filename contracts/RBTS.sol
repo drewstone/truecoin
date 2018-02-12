@@ -13,11 +13,11 @@ contract RBTS is Scorer {
 
     event ScoreTask(bytes32 taskName, address designer, uint128[] scores);
 
-    function RBTS (address _protocol) {
+    function RBTS (address _protocol) public {
         protocol = _protocol;
     }
 
-    function score(bytes32 taskName, address designer) returns (uint128[] scores) {
+    function score(bytes32 taskName, address designer) public returns (uint128[] scores) {
         require(Protocol(protocol).isValidTask(taskName, designer));
 
         // require(Mechanism(mech).terminationTime() < now);
@@ -90,11 +90,10 @@ contract RBTS is Scorer {
         }
 
         ScoreTask(taskName, designer, scoreMap[taskAddr]);
-        Protocol(protocol).score(taskName, designer);
         return scores;
     }
 
-    function quadraticScoring(uint128 i, uint128 p) internal returns(uint128) {
+    function quadraticScoring(uint128 i, uint128 p) internal pure returns(uint128) {
         if (i == 1) {
             return Math.wsub(Math.wmul(2 * 1 ether, p), Math.wmul(p, p));
         } else {

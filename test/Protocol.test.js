@@ -30,7 +30,7 @@ contract('Protocol', (accounts) => {
 
     let address = await protocol.getTask.call(taskName, accounts[0]);
     mechanism = Mechanism.at(address);
-    result = await mechanism.manager.call();
+    result = await mechanism.designer.call();
     assert.equal(result.toString(), protocol.address);
   });
 
@@ -92,7 +92,7 @@ contract('Protocol', (accounts) => {
     promises = result.map(mech => {
       return {
         name: mech.name.call(),
-        manager: mech.manager.call(),
+        designer: mech.designer.call(),
         questions: mech.getQuestions.call(),
       }
     });
@@ -101,7 +101,7 @@ contract('Protocol', (accounts) => {
     result.forEach(res => {
       assert.equal(web3.toAscii(res.name.toString()).replace(new RegExp('\u0000', 'g'), ''), taskName);
       assert.equal(web3.toAscii(res.questions[0].toString()).replace(new RegExp('\u0000', 'g'), ''), questions[0]);
-      assert.equal(res.manager, protocol.address);
+      assert.equal(res.designer, protocol.address);
     })
   });
 
@@ -172,6 +172,6 @@ contract('Protocol', (accounts) => {
     assert.equal(result.logs[0].event, 'ScoreTask');
 
     result = await protocol.mintForTask("rbts", task.address);
-    assert.equal(result.receipt.logs.length, 3);
+    assert.equal(result.receipt.logs.length, 6);
   });
 });

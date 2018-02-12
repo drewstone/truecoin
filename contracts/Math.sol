@@ -9,31 +9,31 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND (express or implied).
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.19;
 
 library Math {
-    function add(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function add(uint256 x, uint256 y) pure internal returns (uint256 z) {
         assert((z = x + y) >= x);
     }
 
-    function sub(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function sub(uint256 x, uint256 y) pure internal returns (uint256 z) {
         assert((z = x - y) <= x);
     }
 
-    function mul(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function mul(uint256 x, uint256 y) pure internal returns (uint256 z) {
         z = x * y;
         assert(x == 0 || z / x == y);
     }
 
-    function div(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function div(uint256 x, uint256 y) pure internal returns (uint256 z) {
         z = x / y;
     }
 
-    function min(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function min(uint256 x, uint256 y) pure internal returns (uint256 z) {
         return x <= y ? x : y;
     }
 
-    function max(uint256 x, uint256 y) internal constant returns (uint256 z) {
+    function max(uint256 x, uint256 y) pure internal returns (uint256 z) {
         return x >= y ? x : y;
     }
 
@@ -42,27 +42,27 @@ library Math {
      */
 
 
-    function hadd(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hadd(uint128 x, uint128 y) pure internal returns (uint128 z) {
         assert((z = x + y) >= x);
     }
 
-    function hsub(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hsub(uint128 x, uint128 y) pure internal returns (uint128 z) {
         assert((z = x - y) <= x);
     }
 
-    function hmul(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hmul(uint128 x, uint128 y) pure internal returns (uint128 z) {
         z = x * y;
         assert(x == 0 || z / x == y);
     }
 
-    function hdiv(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hdiv(uint128 x, uint128 y) pure internal returns (uint128 z) {
         z = x / y;
     }
 
-    function hmin(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hmin(uint128 x, uint128 y) pure internal returns (uint128 z) {
         return x <= y ? x : y;
     }
-    function hmax(uint128 x, uint128 y) internal constant returns (uint128 z) {
+    function hmax(uint128 x, uint128 y) pure internal returns (uint128 z) {
         return x >= y ? x : y;
     }
 
@@ -71,10 +71,10 @@ library Math {
     int256 functions
      */
 
-    function imin(int256 x, int256 y) internal constant returns (int256 z) {
+    function imin(int256 x, int256 y) pure internal returns (int256 z) {
         return x <= y ? x : y;
     }
-    function imax(int256 x, int256 y) internal constant returns (int256 z) {
+    function imax(int256 x, int256 y) pure internal returns (int256 z) {
         return x >= y ? x : y;
     }
 
@@ -82,28 +82,26 @@ library Math {
     WAD math
      */
 
-    uint128 constant WAD = 10 ** 18;
-
-    function wadd(uint128 x, uint128 y) internal constant returns (uint128) {
+    function wadd(uint128 x, uint128 y) pure internal returns (uint128) {
         return hadd(x, y);
     }
 
-    function wsub(uint128 x, uint128 y) internal constant returns (uint128) {
+    function wsub(uint128 x, uint128 y) pure internal returns (uint128) {
         return hsub(x, y);
     }
 
-    function wmul(uint128 x, uint128 y) internal constant returns (uint128 z) {
-        z = cast((uint256(x) * y + WAD / 2) / WAD);
+    function wmul(uint128 x, uint128 y) pure internal returns (uint128 z) {
+        z = cast((uint256(x) * y + (10 ** 18) / 2) / (10 ** 18));
     }
 
-    function wdiv(uint128 x, uint128 y) internal constant returns (uint128 z) {
-        z = cast((uint256(x) * WAD + y / 2) / y);
+    function wdiv(uint128 x, uint128 y) pure internal returns (uint128 z) {
+        z = cast((uint256(x) * (10 ** 18) + y / 2) / y);
     }
 
-    function wmin(uint128 x, uint128 y) internal constant returns (uint128) {
+    function wmin(uint128 x, uint128 y) pure internal returns (uint128) {
         return hmin(x, y);
     }
-    function wmax(uint128 x, uint128 y) internal constant returns (uint128) {
+    function wmax(uint128 x, uint128 y) pure internal returns (uint128) {
         return hmax(x, y);
     }
 
@@ -111,25 +109,23 @@ library Math {
     RAY math
      */
 
-    uint128 constant RAY = 10 ** 27;
-
-    function radd(uint128 x, uint128 y) internal constant returns (uint128) {
+    function radd(uint128 x, uint128 y) pure internal returns (uint128) {
         return hadd(x, y);
     }
 
-    function rsub(uint128 x, uint128 y) internal constant returns (uint128) {
+    function rsub(uint128 x, uint128 y) pure internal returns (uint128) {
         return hsub(x, y);
     }
 
-    function rmul(uint128 x, uint128 y) internal constant returns (uint128 z) {
-        z = cast((uint256(x) * y + RAY / 2) / RAY);
+    function rmul(uint128 x, uint128 y) pure internal returns (uint128 z) {
+        z = cast((uint256(x) * y + (10 ** 27) / 2) / (10 ** 27));
     }
 
-    function rdiv(uint128 x, uint128 y) internal constant returns (uint128 z) {
-        z = cast((uint256(x) * RAY + y / 2) / y);
+    function rdiv(uint128 x, uint128 y) pure internal returns (uint128 z) {
+        z = cast((uint256(x) * (10 ** 27) + y / 2) / y);
     }
 
-    function rpow(uint128 x, uint64 n) internal constant returns (uint128 z) {
+    function rpow(uint128 x, uint64 n) pure internal returns (uint128 z) {
         // This famous algorithm is called "exponentiation by squaring"
         // and calculates x^n with x as fixed-point and n as regular unsigned.
         //
@@ -145,7 +141,7 @@ library Math {
         //  Also, EVM division is flooring and
         //    floor[(n-1) / 2] = floor[n / 2].
 
-        z = n % 2 != 0 ? x : RAY;
+        z = n % 2 != 0 ? x : (10 ** 27);
 
         for (n /= 2; n != 0; n /= 2) {
             x = rmul(x, x);
@@ -156,24 +152,24 @@ library Math {
         }
     }
 
-    function rmin(uint128 x, uint128 y) internal constant returns (uint128) {
+    function rmin(uint128 x, uint128 y) pure internal returns (uint128) {
         return hmin(x, y);
     }
-    function rmax(uint128 x, uint128 y) internal constant returns (uint128) {
+    function rmax(uint128 x, uint128 y) pure internal returns (uint128) {
         return hmax(x, y);
     }
 
-    function cast(uint256 x) internal constant returns (uint128 z) {
+    function cast(uint256 x) pure internal returns (uint128 z) {
         assert((z = uint128(x)) == x);
     }
 
-    function sum(uint128[] a) internal constant returns (uint128 sum) {
+    function sum(uint128[] a) pure internal returns (uint128 s) {
         for (uint i = 0; i < a.length; i++) {
-            sum = wadd(sum, a[i]); 
+            s = wadd(s, a[i]); 
         }
     }
 
-    function getDistinctElements(uint[] a, uint[] b) internal constant returns (uint[], uint[]) {
+    function getDistinctElements(uint[] a, uint[] b) pure internal returns (uint[], uint[]) {
         uint dups = 0;
         bool[] memory aDup = new bool[](a.length);
         bool[] memory bDup = new bool[](b.length);

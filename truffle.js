@@ -3,11 +3,18 @@ const INFURA_API_KEY = "z3IRXB0sVV5ueV4zln3A"
 const mnemonic = "usual dream clay mimic dad suspect mercy amused leader save trip chase";
 
 module.exports = {
+  solc: {
+    optimizer: {
+      enabled: true,
+      runs: 200
+    }
+  },
   networks: {
     development: {
       host: "localhost",
       port: 8545,
-      network_id: "*" // Match any network id
+      network_id: "*", // Match any network id
+      gas: 4700000,
     },
     ropsten:  {
       network_id: 3,
