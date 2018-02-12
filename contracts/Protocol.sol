@@ -24,15 +24,15 @@ contract Protocol {
     mapping (bytes32 => address) public mechanismIndex;
     mapping (address => bool) public hasBeenScored;
 
-    function Protocol() {
+    function Protocol() public  {
         owner = msg.sender;
     }
 
-    function destroyOwner() onlyOwner {
+    function destroyOwner() onlyOwner public {
         owner = this;
     }
 
-    function setTruecoinContract(address trcContract) onlyOwner returns (bool) {
+    function setTruecoinContract(address trcContract) onlyOwner public returns (bool) {
         truecoin = trcContract;
      }
 
@@ -44,20 +44,20 @@ contract Protocol {
      *                           MARKET FUNCTIONS
      */
 
-    function submitQuestion(bytes32 taskName, address designer, bytes32 question, uint questionIndex, uint128[2] predictions) returns (bool) {
-        require(mechanismIndex[sha3(designer, taskName)] != address(0));
+    function submitQuestion(bytes32 taskName, address designer, bytes32 question, uint questionIndex, uint128[2] predictions) public returns (bool) {
+        require(mechanismIndex[keccak256(designer, taskName)] != address(0));
 
-        Mechanism mech = Mechanism(mechanismIndex[sha3(designer, taskName)]);
+        Mechanism mech = Mechanism(mechanismIndex[keccak256(designer, taskName)]);
         mech.submit(question, questionIndex, predictions, msg.sender);
 
         Submission(designer, msg.sender, taskName, predictions, mech);
         return true;
     }
 
-    function submitBatch(bytes32 taskName, address designer, bytes32[] questions, uint[] questionIndices, uint128[2][] predictions) returns (bool) {
-        require(mechanismIndex[sha3(designer, taskName)] != address(0));
+    function submitBatch(bytes32 taskName, address designer, bytes32[] questions, uint[] questionIndices, uint128[2][] predictions) public returns (bool) {
+        require(mechanismIndex[keccak256(designer, taskName)] != address(0));
 
-        Mechanism mech = Mechanism(mechanismIndex[sha3(designer, taskName)]);
+        Mechanism mech = Mechanism(mechanismIndex[keccak256(designer, taskName)]);
         mech.submitBatch(questions, questionIndices, predictions, msg.sender);
 
         BatchSubmission(designer, msg.sender, taskName, predictions, mech);
@@ -66,11 +66,11 @@ contract Protocol {
         return true;
     }
 
-    function createTask(bytes32 taskName, bytes32[] events, bytes32[] questions, uint128 length, bytes32 description, bytes32[] tags) returns (bool) {
-        require(mechanismIndex[sha3(msg.sender, taskName)] == address(0));
+    function createTask(bytes32 taskName, bytes32[] events, bytes32[] questions, uint128 length, bytes32 description, bytes32[] tags) public returns (bool) {
+        require(mechanismIndex[keccak256(msg.sender, taskName)] == address(0));
 
         address mech = new Mechanism(events, questions, length, taskName, description, tags);
-        mechanismIndex[sha3(msg.sender, taskName)] = mech;
+        mechanismIndex[keccak256(msg.sender, taskName)] = mech;
         db.addTaskMechanism(mech, taskName, questions, description, tags);
         Creation(msg.sender, taskName, mech, length, description, tags);
         return true;
@@ -84,7 +84,7 @@ contract Protocol {
      *                           SCORING FUNCTIONS
      */
 
-     function mintForTask(bytes32 scoreType, address taskAddr) {
+     function mintForTask(bytes32 scoreType, address taskAddr) public {
         Scorer scorer;
         if (scoreType == bytes32("rbts")) {
             scorer = Scorer(rbts);
@@ -95,9 +95,14 @@ contract Protocol {
                 Mechanism(taskAddr).getParticipant(i),
                 scorer.getScoreOfParticipant(taskAddr, i));
         }
+
+        hasBeenScored[mechanismIndex[keccak256(
+            Mechanism(taskAddr).designer(),
+            Mechanism(taskAddr).name()
+        )]] = true;
      }
 
-     function setScoringContract(bytes32 scoreType, address scoringContract) onlyOwner returns (bool) {
+     function setScoringContract(bytes32 scoreType, address scoringContract) onlyOwner public returns (bool) {
         if (scoreType == bytes32("rbts")) {
             rbts = scoringContract;
         }
@@ -105,17 +110,11 @@ contract Protocol {
         return true;
      }
 
-     function isValidTask(bytes32 taskName, address designer) returns (bool) {
-        require(mechanismIndex[sha3(designer, taskName)] != address(0));
-        require(!hasBeenScored[mechanismIndex[sha3(designer, taskName)]]);
+     function isValidTask(bytes32 taskName, address designer) public view returns (bool) {
+        require(mechanismIndex[keccak256(designer, taskName)] != address(0));
+        require(!hasBeenScored[mechanismIndex[keccak256(designer, taskName)]]);
         return true;
      }
-
-     function score(bytes32 taskName, address designer) returns (bool) {
-        hasBeenScored[mechanismIndex[sha3(designer, taskName)]] = true;
-        return true;
-     }
-     
 
     /**
      *                           SCORING FUNCTIONS
@@ -130,7 +129,7 @@ contract Protocol {
     }
 
     function getTask(bytes32 taskName, address designer) constant returns (address) {
-        return mechanismIndex[sha3(designer, taskName)];
+        return mechanismIndex[keccak256(designer, taskName)];
     }
 
     function getTaskByHash(bytes32 taskHash) constant returns (address) {
