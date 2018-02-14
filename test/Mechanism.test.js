@@ -11,7 +11,7 @@ contract('Mechanism', (accounts) => {
   const tags = ['Finance'];
 
   beforeEach(async function() {
-    mechanism = await Mechanism.new(events, questions, timeLength, name, description, tags);
+    mechanism = await Mechanism.new(events, questions, timeLength, name, description, tags, accounts[0]);
   });
 
   it('should initialize a mechanism', async function() {

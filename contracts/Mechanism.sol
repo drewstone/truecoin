@@ -3,8 +3,10 @@ pragma solidity ^0.4.10;
 contract Mechanism {
     event Submission(address submitter, bytes32 question, uint128[2] predictions);
 
+    address public protocol;
     address public designer;
     bytes32 public name;
+    bytes32 public keccak;
     bytes32 public description;
     bytes32[] public tags;
 
@@ -33,18 +35,19 @@ contract Mechanism {
     mapping (address => uint128[]) public questionsOfParticipant;
     mapping (address => mapping (uint => uint)) hasAnsweredQuestion;
 
-    function Mechanism(bytes32[] _events, bytes32[] _questions, uint128 _length, bytes32 _name, bytes32 _description, bytes32[] _tags) public {
+    function Mechanism(bytes32[] _events, bytes32[] _questions, uint128 _length, bytes32 _name, bytes32 _description, bytes32[] _tags, address _designer) public {
         require(initiationTime == 0);
+        protocol = msg.sender;
         events = _events;
         name = _name;
         description = _description;
         tags = _tags;
+        keccak = keccak256(_designer, _name);
+        designer = _designer;
 
         totalAnswersByOption = new uint128[](_events.length);
-
         initiationTime = now;
         terminationTime = initiationTime + (_length * 1 days);
-        designer = msg.sender;
         participants.length++;
 
         for (uint i = 0; i < _questions.length; i++) {
@@ -56,7 +59,7 @@ contract Mechanism {
     function submit(bytes32 question, uint questionIndex, uint128[2] predictions, address submitter) public isLive {
         require(questions[questionIndex].data == question);
         require(hasAnsweredQuestion[submitter][questionIndex] == 0);
-        require(msg.sender == designer || msg.sender == submitter);
+        require(msg.sender == protocol || msg.sender == submitter);
         hasAnsweredQuestion[submitter][questionIndex] = 1;
 
         if (participantsIndex[submitter] == 0) {
@@ -74,7 +77,7 @@ contract Mechanism {
     }
 
     function submitBatch(bytes32[] qs, uint[] questionIndices, uint128[2][] predictions, address submitter) public isLive {
-        require(msg.sender == designer || msg.sender == submitter);
+        require(msg.sender == protocol || msg.sender == submitter);
 
         for (uint i = 0; i < qs.length; i++) {
             submit(qs[i], questionIndices[i], predictions[i], submitter);
@@ -162,9 +165,8 @@ contract Mechanism {
         return events;
     }
 
-    modifier isDesigner() { 
-        require(msg.sender == designer);
-        _;
+    function getTags() public view returns (bytes32[]) {
+        return tags;
     }
 
     modifier isLive() { 
