@@ -69,7 +69,7 @@ contract Protocol {
     function createTask(bytes32 taskName, bytes32[] events, bytes32[] questions, uint128 length, bytes32 description, bytes32[] tags) public returns (bool) {
         require(mechanismIndex[keccak256(msg.sender, taskName)] == address(0));
 
-        address mech = new Mechanism(events, questions, length, taskName, description, tags);
+        address mech = new Mechanism(events, questions, length, taskName, description, tags, msg.sender);
         mechanismIndex[keccak256(msg.sender, taskName)] = mech;
         db.addTaskMechanism(mech, taskName, questions, description, tags);
         Creation(msg.sender, taskName, mech, length, description, tags);
@@ -130,6 +130,15 @@ contract Protocol {
 
     function getTask(bytes32 taskName, address designer) constant returns (address) {
         return mechanismIndex[keccak256(designer, taskName)];
+    }
+
+    function getTasksOfDesigner(address designer) constant returns (address[]) {
+        address[] memory tasks = new address[](db.taskHashesByDesigner[designer].length);
+        for (uint i = 0; i < db.taskHashesByDesigner[designer].length; i++) {
+            tasks[i] = mechanismIndex[db.taskHashesByDesigner[designer][i]];
+        }
+
+        return tasks;
     }
 
     function getTaskByHash(bytes32 taskHash) constant returns (address) {
