@@ -169,6 +169,14 @@ contract Mechanism {
         return tags;
     }
 
+    function hasFinishedTask(address submitter) public view returns (bool) {
+        for (uint i = 0; i < questions.length; i++) {
+            require(hasAnsweredQuestion[submitter][i] == 1);
+        }
+
+        return true;
+    }
+
     modifier isLive() { 
         require(now <= terminationTime);
         _; 

@@ -124,15 +124,15 @@ contract Protocol {
      *                           CONSTANT FUNCTIONS
      */
 
-    function getTasks() constant returns (address[]) {
+    function getTasks() public view returns (address[]) {
         return db.tasks;
     }
 
-    function getTask(bytes32 taskName, address designer) constant returns (address) {
+    function getTask(bytes32 taskName, address designer) public view returns (address) {
         return mechanismIndex[keccak256(designer, taskName)];
     }
 
-    function getTasksOfDesigner(address designer) constant returns (address[]) {
+    function getTasksOfDesigner(address designer) public view returns (address[]) {
         address[] memory tasks = new address[](db.taskHashesByDesigner[designer].length);
         for (uint i = 0; i < db.taskHashesByDesigner[designer].length; i++) {
             tasks[i] = mechanismIndex[db.taskHashesByDesigner[designer][i]];
@@ -141,19 +141,19 @@ contract Protocol {
         return tasks;
     }
 
-    function getTaskByHash(bytes32 taskHash) constant returns (address) {
+    function getTaskByHash(bytes32 taskHash) public view returns (address) {
         return mechanismIndex[taskHash];
     }
 
-    function getDesigners() constant returns (address[]) {
+    function getDesigners() public view returns (address[]) {
         return db.designers;
     }
 
-    function getDesignerCount() constant returns (uint) {
+    function getDesignerCount() public view returns (uint) {
         return db.designers.length;
     }
 
-    function getTaskCount() constant returns (uint) {
+    function getTaskCount() public view returns (uint) {
         return db.tasks.length;
     }
 
