@@ -29,7 +29,7 @@ library Database {
         self.tasks.push(taskMechanism);
         self.designerByTaskMechanism[taskMechanism] = msg.sender;
 
-        bytes32 taskHash = sha3(msg.sender, taskName);
+        bytes32 taskHash = keccak256(msg.sender, taskName);
         self.taskHashesByDesigner[msg.sender].push(taskHash);
         self.questionsByTaskHash[taskHash] = questions;
         self.descriptionByTaskHash[taskHash] = description;
