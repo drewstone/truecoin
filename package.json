@@ -3,6 +3,6 @@
     "bluebird": "^3.5.0",
     "ethereumjs-testrpc": "^6.0.3",
     "truffle": "^4.0.6",
-    "truffle-hdwallet-provider": "^0.0.3"
+    "truffle-hdwallet-provider": "0.0.3"
   }
 }

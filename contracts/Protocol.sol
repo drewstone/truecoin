@@ -23,6 +23,7 @@ contract Protocol {
 
     mapping (bytes32 => address) public mechanismIndex;
     mapping (address => bool) public hasBeenScored;
+    mapping (bytes32 => uint128) public scores;
 
     function Protocol() public  {
         owner = msg.sender;
@@ -90,15 +91,22 @@ contract Protocol {
             scorer = Scorer(rbts);
         }
 
+        bytes32 taskName = Mechanism(taskAddr).name();
+        address designer = Mechanism(taskAddr).designer();
+        scorer.score(taskName, designer);
         for (uint i = 0; i < Mechanism(taskAddr).getParticipantCount(); i++) {
+            uint128 score = scorer.getScoreOfParticipant(taskAddr, i);
             Truecoin(truecoin).mint(
-                Mechanism(taskAddr).getParticipant(i),
-                scorer.getScoreOfParticipant(taskAddr, i));
+                Mechanism(taskAddr).getParticipant(i), score);
+            scores[keccak256(
+                    Mechanism(taskAddr).getParticipant(i), 
+                    designer,
+                    taskName)] = score;
         }
 
         hasBeenScored[mechanismIndex[keccak256(
-            Mechanism(taskAddr).designer(),
-            Mechanism(taskAddr).name()
+            designer,
+            taskName
         )]] = true;
      }
 
@@ -114,6 +122,13 @@ contract Protocol {
         require(mechanismIndex[keccak256(designer, taskName)] != address(0));
         require(!hasBeenScored[mechanismIndex[keccak256(designer, taskName)]]);
         return true;
+     }
+
+     function getScore(address user, address taskAddr) public view returns (uint128) {
+         return scores[keccak256(
+                        user, 
+                        Mechanism(taskAddr).designer(),
+                        Mechanism(taskAddr).name())];
      }
 
     /**

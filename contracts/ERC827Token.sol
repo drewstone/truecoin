@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.10;
 
 import './ERC827.sol';
 import './MintableToken.sol';
