@@ -172,6 +172,6 @@ contract('Protocol', (accounts) => {
     assert.equal(result.logs[0].event, 'ScoreTask');
 
     result = await protocol.mintForTask("rbts", task.address);
-    assert.equal(result.receipt.logs.length, 6);
+    assert.equal(result.receipt.logs.length, 7);
   });
 });

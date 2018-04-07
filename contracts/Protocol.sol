@@ -96,18 +96,11 @@ contract Protocol {
         scorer.score(taskName, designer);
         for (uint i = 0; i < Mechanism(taskAddr).getParticipantCount(); i++) {
             uint128 score = scorer.getScoreOfParticipant(taskAddr, i);
-            Truecoin(truecoin).mint(
-                Mechanism(taskAddr).getParticipant(i), score);
-            scores[keccak256(
-                    Mechanism(taskAddr).getParticipant(i), 
-                    designer,
-                    taskName)] = score;
+            Truecoin(truecoin).mint(Mechanism(taskAddr).getParticipant(i), score);
+            scores[keccak256(Mechanism(taskAddr).getParticipant(i), designer, taskName)] = score;
         }
 
-        hasBeenScored[mechanismIndex[keccak256(
-            designer,
-            taskName
-        )]] = true;
+        hasBeenScored[mechanismIndex[keccak256(designer, taskName)]] = true;
      }
 
      function setScoringContract(bytes32 scoreType, address scoringContract) onlyOwner public returns (bool) {
@@ -125,10 +118,7 @@ contract Protocol {
      }
 
      function getScore(address user, address taskAddr) public view returns (uint128) {
-         return scores[keccak256(
-                        user, 
-                        Mechanism(taskAddr).designer(),
-                        Mechanism(taskAddr).name())];
+         return scores[keccak256(user, Mechanism(taskAddr).designer(), Mechanism(taskAddr).name())];
      }
 
     /**
